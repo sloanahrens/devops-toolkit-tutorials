@@ -4,7 +4,7 @@ In this exercise we'll take the Dockerized Django application we built in Parts 
 
 ### Complete Parts 1 and 2
 
-Make sure you have completed [Part 1](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/1-1-microservices-django.md) and [Part 2](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/1-2-containerization-baseimage.md) of the tutorials already.
+Make sure you have completed [Part 1](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1-microservices-django.md) and [Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-baseimage.md) of the tutorials already.
 
 I'll assume that you have all the other files from Parts 1 and 2 still in place in the `devops-toolkit/source/django` directory.
 This exercise should hopefully be [idempotent](https://en.wikipedia.org/wiki/Idempotence), so if you already have the other files in place too, it should still work.
@@ -240,7 +240,7 @@ APP_DEBUG=True
 
 ### 5) Docker-Compose celery stack file
 
-Similar to the approach in [Part 2](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/1-2-containerization-baseimage.md), we'll use a Docker-Compose file for local development.
+Similar to the approach in [Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-baseimage.md), we'll use a Docker-Compose file for local development.
 
 Create:
 
@@ -472,5 +472,5 @@ rm django/stockpicker/celerybeat.pid
 
 Now restart the environment again, and shortly you should see the data update task executing in the log output, and see working graphs at [http://localhost:8000](http://localhost.8000).
 
-[Prev: Part 2](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/1-2-containerization-baseimage.md)
-[Next: Part 4](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/1-4-ci-integration-testing.md)
+[Prev: Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-baseimage.md)
+[Next: Part 4](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-4-ci-integration-testing.md)

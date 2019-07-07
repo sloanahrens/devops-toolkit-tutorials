@@ -11,20 +11,20 @@ You can find installers for the various systems [here](https://docs.docker.com/c
 
 ### Complete Part 1
 
-Make sure you have completed [Part 1](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/1-1-microservices-django.md) of the tutorials already.
+Make sure you have completed [Part 1](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1-microservices-django.md) of the tutorials already.
 
 I'll assume that you have all the other files from Part 1 still in place in the `devops-toolkit/source/django` directory.
 This tutorial should hopefully be [idempotent](https://en.wikipedia.org/wiki/Idempotence), so if you already have the other files in place too, it should still work.
 
 ### Development environment
 
-We're not going to use the [`devops` development environment](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/0-local-dev-env-devops.md) in this tutorial like we did in Part 1.
+We're not going to use the [`devops` development environment](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md) in this tutorial like we did in Part 1.
 Using the base Docker image for our application turns out to be a slightly better way, and hopefully less confusing in the end, since we will be using one of our deliverables as a development tool.
 
 ### PostgreSQL
 
 In this exercise we are going to run multiple microservices, including PostgreSQL.
-We made it through Part 1 using only Sqlite, but since we will be need to run multiple microservices in order to use Celery in [Part 3](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/1-3-microservices-celery.md), we may as well upgrade our database along the way.
+We made it through Part 1 using only Sqlite, but since we will be need to run multiple microservices in order to use Celery in [Part 3](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-3-microservices-celery.md), we may as well upgrade our database along the way.
 
 
 ### Add Postgres client to requirements file
@@ -248,5 +248,5 @@ After you're done with it, be sure to kill the stack with:
 docker-compose -f docker/docker-compose-local-dev-django.yaml down
 ```
 
-[Prev: Part 1](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/1-1-microservices-django.md)
-[Next: Part 3](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/1-3-microservices-celery.md)
+[Prev: Part 1](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1-microservices-django.md)
+[Next: Part 3](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-3-microservices-celery.md)

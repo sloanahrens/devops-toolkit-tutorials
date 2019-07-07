@@ -66,7 +66,7 @@ devops-toolkit/
 
 ### `devops` Development Environment
 
-In this exercise we'll use the `devops` development environment (rather than the `baseimage` dev env from Parts 2 and 3), so make sure you can run it as described [here](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/0-local-dev-env-devops.md).
+In this exercise we'll use the `devops` development environment (rather than the `baseimage` dev env from Parts 2 and 3), so make sure you can run it as described [here](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md).
 
 Make sure you have built the `devops` Docker image, by running the following command from your `devops-toolkit` directory:
 
@@ -705,5 +705,5 @@ Now go back to your CircleCI dashboard page and watch the latest two jobs run.
 
 If you click on the 
 
-[Prev: Part 4](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/1-4-ci-integration-testing.md)
+[Prev: Part 4](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-4-ci-integration-testing.md)
 [Next: Part 6]()

@@ -30,7 +30,7 @@ devops-toolkit/
 
 ### `devops` Development Environment
 
-In this exercise we'll use the `devops` development environment (rather than the `baseimage` dev env from Parts 2 and 3), so make sure you can run it as described [here](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/0-local-dev-env-devops.md).
+In this exercise we'll use the `devops` development environment (rather than the `baseimage` dev env from Parts 2 and 3), so make sure you can run it as described [here](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md).
 
 Make sure you have built the `devops` Docker image, by running the following command from your `devops-toolkit` directory:
 
@@ -142,7 +142,7 @@ uwsgi --module stockpicker.wsgi:application --http 0.0.0.0:8001 --static-map /st
 
 This Bash script will serve as the entrypoint for the web application Docker image.
 The script first uses `wait-for-it.sh` to wait for service dependencies to be initialized and ready, then waits ten seconds.
-Next the script initializes the app by running database migrations, collecting static files, and loading the default `Ticker`s via the Django management command we defined in [Part 1](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/1-1-microservices-django.md).
+Next the script initializes the app by running database migrations, collecting static files, and loading the default `Ticker`s via the Django management command we defined in [Part 1](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1-microservices-django.md).
 The script then queues up the `chained_ticker_updates` Celery task, so that `Quote`s will get updated as soon as a Celery worker is available.
 The final step is to start the [uWSGI server](https://uwsgi-docs.readthedocs.io/en/latest/), which we will use as our application server.
 The `uwsgi` command runs the application at `0.0.0.0:8001` (accessible at `localhost:8001` from the host OS), and uses the `--static-map` flag to serve our static assets (an improvement would be to use [nginx](https://www.nginx.com/) instead, but it adds some comlexity).
@@ -751,5 +751,5 @@ docker run -e SERVICE="localhost:8001" --network container:stockpicker_webapp st
 docker-compose -f docker/docker-compose-local-image-stack.yaml down
 ```
 
-[Prev: Part 3](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/1-3-microservices-celery.md)
-[Next: Part 5](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/1-5-ci-circleci-aws.md)
+[Prev: Part 3](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-3-microservices-celery.md)
+[Next: Part 5](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-5-ci-circleci-aws.md)

@@ -137,4 +137,4 @@ docker rm local_devops
 
 and then run the `docker run` command again.
 
-[Next Part 1](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/1-1-microservices-django.md)
+[Next Part 1](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1-microservices-django.md)

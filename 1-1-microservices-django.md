@@ -37,7 +37,7 @@ There are also plenty of DevOps dependencies we will need along the way, but the
 
 ### Set up the development environment
 
-The first thing you will need to do is set up your local development environment as described [here](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/0-local-dev-env-devops.md).
+The first thing you will need to do is set up your local development environment as described [here](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md).
 
 If you are not familiar with [Docker](https://www.docker.com/) yet, do not fear. 
 We are going to be using it enough that I think you will begin to get a feel for what it really is.
@@ -213,7 +213,7 @@ INSTALLED_APPS = [
 Django is compatible with a number of different [databases](https://docs.djangoproject.com/en/2.2/ref/databases/).
 For this tutorial we are going to use the default [SQLite](https://sqlite.org/index.html) database.
 It should not be used in production but can be useful for development and code-testing, and provides conceptual simplicity at this stage of the tutorial.
-The [`baseimage` containerization tutorial](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/1-2-containerization-baseimage.md) adds a Postgres database to the development stack.
+The [`baseimage` containerization tutorial](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-baseimage.md) adds a Postgres database to the development stack.
 
 ### Build and test models
 
@@ -1309,5 +1309,5 @@ Now you should be able to go to [`localhost:8000`](http://localhost:8000/) in yo
 
 You can stop the development server with `ctl-c` and exit your running `devops` container with `exit`.
 
-[Prev: Part 0](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/0-local-dev-env-devops.md)
-[Next: Part 2](https://github.com/sloanahrens/devops-toolkit/blob/master/tutorials/1-2-containerization-baseimage.md)
+[Prev: Part 0](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md)
+[Next: Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-baseimage.md)
