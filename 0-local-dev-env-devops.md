@@ -55,11 +55,7 @@ and then navigate to the new directory with:
 
 ### `devops` image development environment
 
-The Docker image defined in the [`devops` Dockerfile](https://github.com/sloanahrens/devops-toolkit/blob/master/docker/devops/Dockerfile) can be used for local development for devops-related tasks (it's is used as the base image for [CircleCI](https://circleci.com) jobs for this project, which we'll get to later).
-
-The image can also be pulled from [DockerHub](https://cloud.docker.com/u/sloanahrens/repository/docker/sloanahrens/devops-toolkit-ci-dev-env), if you wish.
-
-In what follows we will use the `devops/Dockerfile` to build and tag the image locally.
+The Docker image defined in the [`devops` Dockerfile](https://github.com/sloanahrens/devops-toolkit/blob/master/docker/devops/Dockerfile) can be used for local development for devops-related tasks. 
 
 First we need to build and tag the `devops` image.
 From the root of your local clone of the `devops-toolkit` repository, run:
@@ -68,12 +64,21 @@ From the root of your local clone of the `devops-toolkit` repository, run:
 docker build -t devops -f docker/devops/Dockerfile .
 ```
 
-So that command builds a [Docker image]()
+So that command builds a [Docker image](https://docs.docker.com/engine/reference/commandline/images/).
+As homework later, you should go read some about what Docker is and how it works.
+These tutorials largely just explain how to use it to do specific things.
 
-Then we can run it with:
+Then we can run our new Docker image with:
 
 ```bash
-docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/src --rm --name local_devops devops /bin/bash
+docker run -it \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v $PWD:/src \
+  --rm \
+  --name \
+  local_devops \
+  devops \
+  /bin/bash
 ```
 
 Once you run the command, you should see a prompt like (the ID will be different):
@@ -115,7 +120,7 @@ root@ae87cc98313a:/src# ls
 README.md  ci_scripts  container_environments  django  docker  kubernetes  tutorials
 ```
 
-To start a second session (in another terminal tab or screen, perhaps) into the already-running container, you can run:
+To start a second session (in another terminal tab or [screen](https://help.ubuntu.com/community/Screen), perhaps) into the already-running container, you can run:
 
 ```bash
 docker exec -it local_devops /bin/bash
@@ -129,12 +134,14 @@ If you get an error message like:
 docker: Error response from daemon: Conflict. The container name "/local_devops" is already in use by ...
 ```
 
-remove the existing container with:
+then you can remove the existing container with:
 
 ```bash
 docker rm local_devops
 ```
 
 and then run the `docker run` command again.
+
+When you're finished working in the `local_devops` container simply type `exit`.
 
 [Next Part 1](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1-microservices-django.md)
