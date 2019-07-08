@@ -13,8 +13,12 @@ You can find installers for the various systems [here](https://docs.docker.com/c
 
 Make sure you have completed [Part 1](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1-microservices-django.md) of the tutorials already.
 
-I'll assume that you have all the other files from Part 1 still in place in the `devops-toolkit/source/django` directory.
+I'll assume that you have all the other files from Part 1 still in place in the `devops-toolkit/source/` directory.
 This tutorial should hopefully be [idempotent](https://en.wikipedia.org/wiki/Idempotence), so if you already have the other files in place too, it should still work.
+
+Your `devops-toolkit/source` directory should should contain at least the directories and files under `source` in this image:
+
+![alt text](https://github.com/sloanahrens/devops-toolkit-tutorials/raw/master/images/django_files.png "Source files up to this point")
 
 ### Development environment
 
@@ -29,8 +33,7 @@ We made it through Part 1 using only Sqlite, but since we will be need to run mu
 
 ### Add dependencies to requirements file
 
-We will need to add the [psycopg2 adapter](https://pypi.org/project/psycopg2/) to our `pip` requirements, as well as a few other Python dependencies.
-The dependencies are [Celery](), [redis](), and [django-redis-cache]().
+We will need to add the [psycopg2 adapter](https://pypi.org/project/psycopg2/) to our `pip` requirements, as well as a few other Python dependencies, including [Celery](), [redis](), and [django-redis-cache]().
 This time we will simply edit the `source/django/requirements.txt` file.
 
 `source/django/requirements.txt` sound match:
@@ -185,14 +188,15 @@ The [postgres container](https://linuxhint.com/run_postgresql_docker_compose/) w
 ### 3) wait-for-it.sh
 
 [Wait-For-It](https://github.com/vishnubob/wait-for-it) is super handy in the world of containers.
+
 Create: 
-`source/docker/scripts/wait-for-it.sh` with the contents from: [https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh](https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh)
+`source/docker/scripts/wait-for-it.sh` with the contents from [here](https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh).
 
 ### Build `baseimage`
 
 With all those files in place we can now build our first (well, our second) Docker image.
 
-From your host OS, in the `devops-toolkit` directory, run:
+From your host OS, in your `source` directory, run:
 
 ```bash
 docker build -t baseimage -f docker/baseimage/Dockerfile .
@@ -509,7 +513,7 @@ volumes:
 
 This Docker-Compose file creates the same `postgres` and `django` instances as in Part 1, and adds [redis](https://redis.io/) and [RabbitMQ](https://www.rabbitmq.com/) services as well as a second `baseimage` instance configured to run a single Celery worker. 
 
-Now, with everything else in place, we can run it with:
+Now, with everything else in place, we can run it (from the `source` directory on the host OS) with:
 
 ```bash
 docker-compose -f docker/docker-compose-local-dev-django-celery.yaml up
@@ -643,7 +647,7 @@ If you want to make it run more-or-less immediately, you can update `CELERY_BEAT
 ```python
 CELERY_BEAT_SCHEDULE = {
     'quotes-hourly-update': {
-        'task': 'tickers.tasks.chained_ticker_updates',
+        'task': 'tickers.tasks.update_all_tickers',
         'schedule': crontab(hour="*", minute="*", day_of_week='*'),
     }
 }
@@ -666,20 +670,13 @@ local_dev_celery_beat | Seems we're already running? (pid: 1)
 Then kill the dev environment, and remove the `celerybeat.pid` file with:
 
 ```bash
-rm django/stockpicker/celerybeat.pid
+rm django/stockpicker/celerybeat*
 ```
 
-Now restart the environment again, and shortly you should see the data update task executing in the log output, and eventually see working graphs at [http://localhost:8000](http://localhost.8000).
+Now restart the environment again, and shortly you should see the data update task executing in the log output.
+
+Eventually you should see working graphs at [http://localhost:8000](http://localhost.8000) that look like what you see live at [https://stockpicker.sloanahrens.com](https://stockpicker.sloanahrens.com).
 
 [Prev: Part 1](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1-microservices-django.md)
 |
 [Next: Part 3](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-3-ci-integration-testing.md)
-
-
-
-# devops-toolkit-tutorials
-Tutorials describing construction of the devops-toolkit repository.
-
-Start at the beginning: 
-
-[0-local-dev-env-devops.md](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md)

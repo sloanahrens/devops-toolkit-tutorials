@@ -145,6 +145,7 @@ django-admin startproject stockpicker
 ```
 
 Let’s look at what `startproject` created.
+If you type `ls` you will see the directory `stockpicker` next to `requirements.txt`.
 If you look through the `stockpicker` directory, you should see a file structure that looks like this:
 
 ```
@@ -389,6 +390,7 @@ class QuoteModelTests(TestCase):
         self.assertEqual(
             json.dumps(quote.serialize()),
             json.dumps(fake_quote_serialize(quote)))
+
 ```
 
 We also need to add this setting to `settings.py`.
@@ -589,7 +591,7 @@ tickers/
 
 The contents of `load_tickers.py` and `update_ticker_quotes.py` should be as follows.
 
-`source/django/stockpicker/tickers/management/commands/load_tickers.py` should match:
+**1)** `source/django/stockpicker/tickers/management/commands/load_tickers.py` should match:
 ```python
 from django.core.management import BaseCommand
 from django.conf import settings
@@ -608,7 +610,7 @@ class Command(BaseCommand):
 
 ```
 
-`source/django/stockpicker/tickers/management/commands/update_ticker_quotes.py` should match:
+**2)** `source/django/stockpicker/tickers/management/commands/update_ticker_quotes.py` should match:
 ```python
 from django.core.management import BaseCommand
 from django.conf import settings
@@ -780,7 +782,7 @@ urlpatterns = [
     path('tickers/addticker/', AddTickerView.as_view(), name='add_ticker'),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-`
+
 ```
 
 **Step 3**:  Edit the contents of `stockpicker/tickers/views` file.
@@ -1278,7 +1280,7 @@ Notice that we added `-p 8000:8000` to forward the port `8000`.
 But now, since we recycled our dev environment, we have to install our `pip` requirements again, so run:
 
 ```bash
-cd /src/django && pip install -r requirements.txt
+pip install -r /src/django/requirements.txt
 ```
 
 Now run the [`collectstatic` management command](https://stackoverflow.com/questions/34586114/whats-the-point-of-djangos-collectstatic):
@@ -1305,9 +1307,9 @@ python manage.py runserver 0.0.0.0:8000
 
 You should see the webserver running in the log output. Leave it running and open your web browser.
 
-Now you should be able to go to [`localhost:8000`](http://localhost:8000/) in your favorite browser from your host OS, and see the same thing that you see live at [stockpicker.sloanahrens.com](https://stockpicker.sloanahrens.com).
+Now you should be able to go to [`localhost:8000`](http://localhost:8000/) in your [favorite web-browser](https://www.mozilla.org) from your host OS, and see the same thing that you see live at [stockpicker.sloanahrens.com](https://stockpicker.sloanahrens.com).
 
-You can stop the development server with `ctl-c` and exit your running `devops` container with `exit`.
+You can stop the development server with `ctl-c` and exit your running `devops` container by typing `exit` and hitting enter.
 
 [Prev: Part 0](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md)
 |
