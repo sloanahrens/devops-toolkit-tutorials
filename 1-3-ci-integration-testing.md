@@ -1,4 +1,4 @@
-# Part 4: CI: Automate App Testing with Docker-Compose
+# Part 3: CI: Local App Integration Testing with Docker-Compose
 
 In this exercise we will build out the beginnings of a CI pipeline that produces application Docker images as the first set of [deliverables](https://en.wikipedia.org/wiki/Deliverable).
 We won't fully automate the process until the next exercise, but by the end of this exercise we will be able to run a series of simple commands that:
@@ -7,9 +7,9 @@ We won't fully automate the process until the next exercise, but by the end of t
 - run the application integration tests against a full local application "stack", with error output
 - clean up local test infrastructure after we're finished testing
 
-### Complete Parts 1-3
+### Complete Parts 1-2
 
-Make sure you've completed the first three parts of the tutorial.
+Make sure you've completed the first two parts of the tutorial.
 
 I'll assume that you still have all the files in place from the previous three exercises, contained in your `source` directory at the top level of your local clone of the `devops-toolkit` [repostitory](https://github.com/sloanahrens/devops-toolkit).
 
@@ -187,7 +187,7 @@ python-dateutil==2.8.0
 pytz==2019.1
 PyYAML==5.1
 redis==3.2.1
-requests==2.19.1
+requests>=2.20.0
 rsa==3.4.2
 s3transfer==0.2.1
 six==1.12.0
@@ -757,6 +757,6 @@ docker run -e SERVICE="localhost:8001" --network container:stockpicker_webapp st
 docker-compose -f docker/docker-compose-local-image-stack.yaml down
 ```
 
-[Prev: Part 3](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-3-microservices-celery.md)
+[Prev: Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1-microservices-django.md)
 |
-[Next: Part 5](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-5-ci-circleci-aws.md)
+[Next: Part 4](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-4-ci-circleci-aws.md)

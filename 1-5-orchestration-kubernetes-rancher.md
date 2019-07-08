@@ -1,4 +1,4 @@
-# Part 6: Building and maintaining a Kubernetes cluster from CI
+# Part 5: Building and maintaining a Kubernetes cluster from CI
 
 ### Complete Parts 1-5
 
@@ -75,5 +75,5 @@ container_environments	django	docker
 ### Kubernetes and Rancher
 ...
 
-[Prev: Part 5](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-5-ci-circleci-aws.md)
-[Next: Part 7]()
+[Prev: Part 4](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-4-ci-circleci-aws.md)
+[Next: Part 6]()

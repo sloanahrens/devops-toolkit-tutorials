@@ -1,4 +1,4 @@
-# Part 5: CI: Automate Building App Deliverables with GitHub, CircleCI, and AWS
+# Part 4: CI: Automate Building App Deliverables with GitHub, CircleCI, and AWS
 
 In this exercise we will take what we've built so far and automate it by building a true continuous-integration pipeline.
 The deliverables of this pipeline will be our application docker images, automatically pushed to a private Docker repository under our control.
@@ -708,6 +708,6 @@ Now go back to your CircleCI dashboard page and watch the latest two jobs run.
 
 The final output you see in the second job, called `tagged_image_test` should look like the integration test output you have seen before.
 
-[Prev: Part 4](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-4-ci-integration-testing.md)
+[Prev: Part 3](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-3-ci-integration-testing.md)
 |
-[Next: Part 6](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-6-orchestration-kubernetes-rancher.md)
+[Next: Part 5](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-5-orchestration-kubernetes-rancher.md)

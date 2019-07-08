@@ -213,7 +213,7 @@ INSTALLED_APPS = [
 Django is compatible with a number of different [databases](https://docs.djangoproject.com/en/2.2/ref/databases/).
 For this tutorial we are going to use the default [SQLite](https://sqlite.org/index.html) database.
 It should not be used in production but can be useful for development and code-testing, and provides conceptual simplicity at this stage of the tutorial.
-The [`baseimage` containerization tutorial](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-baseimage.md) adds a Postgres database to the development stack.
+The [containerization tutorial](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-celery.md) adds a Postgres database to the development stack.
 
 ### Build and test models
 
@@ -1311,4 +1311,4 @@ You can stop the development server with `ctl-c` and exit your running `devops` 
 
 [Prev: Part 0](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md)
 |
-[Next: Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-baseimage.md)
+[Next: Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-celery.md)
