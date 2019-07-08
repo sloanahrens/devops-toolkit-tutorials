@@ -1,4 +1,4 @@
-# Part 3: Async Task Processing with Celery
+# Part 3: Microservices: Async Task Processing with Celery
 
 In this exercise we'll take the Dockerized Django application we built in Parts 1 and 2, and add asynchronous task-processing capabilities with Celery.
 
@@ -473,4 +473,5 @@ rm django/stockpicker/celerybeat.pid
 Now restart the environment again, and shortly you should see the data update task executing in the log output, and see working graphs at [http://localhost:8000](http://localhost.8000).
 
 [Prev: Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-baseimage.md)
+|
 [Next: Part 4](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-4-ci-integration-testing.md)

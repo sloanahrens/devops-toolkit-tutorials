@@ -1,4 +1,11 @@
-# Part 4: Automate App Testing with Docker-Compose
+# Part 4: CI: Automate App Testing with Docker-Compose
+
+In this exercise we will build out the beginnings of a CI pipeline that produces application Docker images as the first set of [deliverables](https://en.wikipedia.org/wiki/Deliverable).
+We won't fully automate the process until the next exercise, but by the end of this exercise we will be able to run a series of simple commands that:
+- build production Docker image deliverables from our Django/Celery application code
+- run the application unit tests
+- run the application integration tests against a full local application "stack", with error output
+- clean up local test infrastructure after we're finished testing
 
 ### Complete Parts 1-3
 
@@ -10,7 +17,6 @@ Your `source` directory should have at least the following structure:
 
 ```
 devops-toolkit/
-    ...
     source/
         container_environments/
             test-stack.yaml
@@ -22,10 +28,9 @@ devops-toolkit/
                 Dockerfile
             scripts/
                 wait-for-it.sh
-            docker-compose-local-dev-django.html
-            docker-compose-local-dev-django-celery.html
-            docker-compose-local-dev-django.html-celery-beat.html
-    ...
+            docker-compose-local-dev-django.yaml
+            docker-compose-local-dev-django-celery.yaml
+            docker-compose-local-dev-django.html-celery-beat.yaml
 ```
 
 ### `devops` Development Environment
@@ -752,4 +757,5 @@ docker-compose -f docker/docker-compose-local-image-stack.yaml down
 ```
 
 [Prev: Part 3](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-3-microservices-celery.md)
+|
 [Next: Part 5](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-5-ci-circleci-aws.md)

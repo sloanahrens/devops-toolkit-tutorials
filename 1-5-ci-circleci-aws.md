@@ -1,11 +1,18 @@
-In this exercise we will take what we've built so far and automate it into a continuous-integration pipeline.
+# Part 5: CI: Automate Building App Deliverables with GitHub, CircleCI, and AWS
+
+In this exercise we will take what we've built so far and automate it by building a true continuous-integration pipeline.
 The deliverables of this pipeline will be our application docker images, automatically pushed to a private Docker repository under our control.
 We will need to set up some configuration to hook all the pieces together and get the pipeline working.
-In later exercises we will build out more CI modules.
+In later exercises we will build out more CI modules as we build up more DevOps infrastructure.
 
 ### Sign up for stuff
 
 A consequence of doing a concrete, step-by-step tutorial is that some concrete decisions have to be made about service providers.
+I made the choices that I believe are the most sensible defaults.
+This means that to follow along you will have to commit to signing up for a few things.
+It shouldn't cost you much if any money, if you're careful.
+
+_But it might cost actual money so be careful._
 
 I'm going to ask you to sign up for accounts with [GitHub](https://github.com/), [CircleCI](https://circleci.com/), and [Amazon Web Services](https://aws.amazon.com/).
 
@@ -14,10 +21,6 @@ You could use [Bitbucket](https://bitbucket.org/product/) instead of GitHub.
 You could use [Jenkins](https://jenkins.io/) instead of CircleCI, either [hosted](https://duckduckgo.com/?q=hosted+jenkins) or self-maintained, or any of countless other [CI tools](https://duckduckgo.com/?q=top+continuous+integration+tools).
 You could use [Azure](https://azure.microsoft.com/en-us/) or [Rackspace](https://www.rackspace.com/) instead of AWS.
 It would be a worthy exercise to pick some different providers and rebuild portions of this tutorial with those instead of my choices.
-
-Building anything real requires making some concrete choices.
-I made the choices that I believe are the most sensible defaults.
-But it means that to follow along you will have to commit to signing up for a few things.
  
 ### Warning: AWS costs $$$
 
@@ -27,9 +30,9 @@ I'll bring this point up again, but Amazon will happily bill you for all your cl
 I won't ask you to anything that will cost more than a few dollars a month, if that--at least until we get around to deploying [Kubernetes](https://kubernetes.io/).
 
 
-### Complete Parts 1-3
+### Complete Parts 1-4
 
-Make sure you've completed the first three parts of the tutorial.
+Make sure you've completed the first four parts of the tutorial.
 
 I'll assume that you still have all the files in place from the previous three exercises, contained in your `source` directory at the top level of your local clone of the `devops-toolkit` [repostitory](https://github.com/sloanahrens/devops-toolkit).
 
@@ -37,7 +40,6 @@ Your `source` directory should have at least the following structure:
 
 ```
 devops-toolkit/
-    ...
     source/
         container_environments/
             test-stack.yaml
@@ -54,14 +56,14 @@ devops-toolkit/
                 wait-for-it.sh
             stacktest/
                 Dockerfile
+                integration-tests.sh
             webapp/
                 Dockerfile
-            docker-compose-local-dev-django.html
-            docker-compose-local-dev-django-celery.html
-            docker-compose-local-dev-django.html-celery-beat.html
+            docker-compose-local-dev-django.yaml
+            docker-compose-local-dev-django-celery.yaml
+            docker-compose-local-dev-django.html-celery-beat.yaml
             docker-compose-local-image-stack.yaml
             docker-compose-unit-test.yaml
-    ...
 ```
 
 ### `devops` Development Environment
@@ -320,7 +322,7 @@ All the same commands are running in the job that we have been running by hand.
 
 Once the job completes, you should see something very similiar to this screenshot (your job ID might be different):
 
-![alt text](https://github.com/sloanahrens/devops-toolkit/raw/master/src/common/images/circleci_first_job.png "CircleCI job output")
+![alt text](https://github.com/sloanahrens/devops-toolkit-tutorials/raw/master/images/circleci_first_job.png "CircleCI job output")
 
 ### AWS ECR Docker image repositories
 
@@ -362,19 +364,19 @@ AmazonRoute53FullAccess
 ```
 So [create your user](https://console.aws.amazon.com/iam/home#/users$new?step=details), like this:
 
-![alt text](https://github.com/sloanahrens/devops-toolkit/raw/master/src/common/images/aws_iam_create_2.png "Create IAM user")
+![alt text](https://github.com/sloanahrens/devops-toolkit-tutorials/raw/master/images/aws_iam_create_2.png "Create IAM user")
 
 Make sure you select the "Programmatic access" box.
 
 Next, you can either add the user to a Group, and add all the policies we will need to the Group, or you can simply attach the policies directly to your user. 
 I did the latter.
 
-![alt text](https://github.com/sloanahrens/devops-toolkit/raw/master/src/common/images/aws_iam_create_2.png "Add IAM user permissions")
+![alt text](https://github.com/sloanahrens/devops-toolkit-tutorials/raw/master/images/aws_iam_create_2.png "Add IAM user permissions")
 
 You can add tags if you want, then review and create the user.
 You should see something like:
 
-![alt text](https://github.com/sloanahrens/devops-toolkit/raw/master/src/common/images/aws_iam_create_3.png "IAM user created")
+![alt text](https://github.com/sloanahrens/devops-toolkit-tutorials/raw/master/images/aws_iam_create_3.png "IAM user created")
 
 You will need the `Access key ID` and `Secret access key` values from this page, to plug into CircleCI.
 You can copy and paste them from this page, or click the "Download .csv" button to download a CSV file containing the keys. 
@@ -392,7 +394,7 @@ Protect your AWS keys like you would protect your most valuable physical keys.
 Instead, I added my AWS keys to my CircleCI account in [AWS Permissions environment variables](https://circleci.com/gh/sloanahrens/devops-toolkit-test/edit#aws) in CircleCI.
 Just paste your keys into the boxes, and they will be available as environment variables in the CircleCI jobs, which means we can use the [AWS CLI](https://aws.amazon.com/cli/) in our CircleCI jobs.
 
-![alt text](https://github.com/sloanahrens/devops-toolkit/raw/master/src/common/images/aws_iam_create_3.png "AWS keys in CircleCI")
+![alt text](https://github.com/sloanahrens/devops-toolkit-tutorials/raw/master/images/aws_iam_create_3.png "AWS keys in CircleCI")
 
 
 ### Push Docker images
@@ -703,7 +705,8 @@ git push origin master
 
 Now go back to your CircleCI dashboard page and watch the latest two jobs run.
 
-If you click on the 
+The final output you see in the second job, called `tagged_image_test` should look like the integration test output you have seen before.
 
 [Prev: Part 4](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-4-ci-integration-testing.md)
-[Next: Part 6]()
+|
+[Next: Part 6](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-6-orchestration-kubernetes-rancher.md)

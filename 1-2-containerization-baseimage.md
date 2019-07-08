@@ -1,4 +1,4 @@
-# Part 2: Dockerize the App
+# Part 2: Containerization: Dockerize the Django App
 
 In this exercise we will take the Django application we built in Part 1, and "dockerize" it.
 We will build the configuration necessary to build a Docker image that can run our application for local development purposes.
@@ -249,4 +249,5 @@ docker-compose -f docker/docker-compose-local-dev-django.yaml down
 ```
 
 [Prev: Part 1](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1-microservices-django.md)
+|
 [Next: Part 3](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-3-microservices-celery.md)

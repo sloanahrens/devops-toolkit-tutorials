@@ -1,4 +1,4 @@
-# Part 1: A Modest Django Web App 
+# Part 1: Microservices: A Modest Django Web App 
 
 In order to do our DevOps work, we need a software application to build, test and deploy. 
 We will ultimately deploy our application as several microservices, but first we have to build it. 
@@ -1310,4 +1310,5 @@ Now you should be able to go to [`localhost:8000`](http://localhost:8000/) in yo
 You can stop the development server with `ctl-c` and exit your running `devops` container with `exit`.
 
 [Prev: Part 0](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md)
+|
 [Next: Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-baseimage.md)
