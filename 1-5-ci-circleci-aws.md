@@ -364,7 +364,7 @@ AmazonRoute53FullAccess
 ```
 So [create your user](https://console.aws.amazon.com/iam/home#/users$new?step=details), like this:
 
-![alt text](https://github.com/sloanahrens/devops-toolkit-tutorials/raw/master/images/aws_iam_create_2.png "Create IAM user")
+![alt text](https://github.com/sloanahrens/devops-toolkit-tutorials/raw/master/images/aws_iam_create_1.png "Create IAM user")
 
 Make sure you select the "Programmatic access" box.
 
