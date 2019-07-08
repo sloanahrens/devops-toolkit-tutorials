@@ -45,6 +45,7 @@ devops-toolkit/
             test-stack.yaml
         django/
             stockpicker/
+                ...
             requirements.txt
         docker/
             baseimage/
