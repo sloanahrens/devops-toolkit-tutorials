@@ -192,7 +192,9 @@ tickers/
 ```
 
 We need to edit the Django settings file now, so that the application will recognize our code.
+
 Edit `stockpicker/stockpicker/settings.py` to include the setting below.
+You can just paste this code into the bottom of your `settings.py` file, or replace the existing `INSTALLED_APPS` setting.
 
 `source/django/stockpicker/stockpicker/settings.py` should include:
 ```python
@@ -341,9 +343,8 @@ root@d1fdee37d94d:/src/stockpicker#
 ```
 
 Now that we have some models, we can test them with some unit tests.
-Add the following code to `stockpicker/tickers/tests.py`.
 
-`source/django/stockpicker/tickers/tests.py` should match:
+Edit `source/django/stockpicker/tickers/tests.py` to match:
 ```python
 import json
 
@@ -395,7 +396,7 @@ class QuoteModelTests(TestCase):
 
 We also need to add this setting to `settings.py`.
 
-`source/django/stockpicker/stockpicker/settings.py` should include:
+`source/django/stockpicker/stockpicker/settings.py` should include (just add this at the bottom of the file):
 ```python
 DECIMAL_DIGITS = 4
 ```
@@ -563,7 +564,7 @@ pip install fix-yahoo-finance==0.1.33
 pip install pandas-datareader==0.7.0
 ```
 
-And `pip freeze` again:
+And remember to `pip freeze` again:
 
 ```bash
 pip freeze > /src/django/requirements.txt
@@ -755,7 +756,7 @@ class PickerPageView(TemplateView):
 
 **Step 2**:  We need to edit our [`urls.py` file](https://tutorial.djangogirls.org/en/django_urls/).
 
-`source/django/stockpicker/stockicker/urls.py` should match:
+Edit `source/django/stockpicker/stockicker/urls.py` to match:
 ```python
 from django.urls import path
 from django.contrib import admin
@@ -785,7 +786,7 @@ urlpatterns = [
 
 ```
 
-**Step 3**:  Edit the contents of `stockpicker/tickers/views` file.
+**Step 3**:  Edit the contents of `tickers/views` file.
 
 `source/django/stockpicker/tickers/views.py` should match:
 ```python
@@ -800,11 +801,6 @@ from rest_framework.permissions import AllowAny
 
 from tickers.models import Ticker, Quote
 from tickers.utility import update_ticker_data
-
-
-class PickerPageView(TemplateView):
-
-    template_name = 'tickers/picker.html'
 
 
 class SearchTickerDataView(APIView):

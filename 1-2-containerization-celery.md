@@ -78,9 +78,9 @@ wrapt==1.11.2
 
 ### Django database setting
 
-We also need to add our database settings to `settings.py`:
+We also need to add our database settings to `settings.py`.
 
-So `source/django/stockpicker/stockpicker/settings.py` should include:
+So paste the following code down at the bottom of the `source/django/stockpicker/stockpicker/settings.py` file:
 ```python
 DATABASES = {
     'default': {
@@ -99,7 +99,8 @@ DATABASES = {
 We're going to need to create several files now. 
 Our first `Dockerfile` is next.
 
-Make sure that your `source` directory exists at the root of the `devops-toolkit` directory, and create:
+Make sure that your `source` directory exists at the root of the `devops-toolkit` directory.
+In the `source` directory create a `docker` directory and a `baseimage` directory inside that, and then the following file
 
 `source/docker/baseimage/Dockerfile`:
 

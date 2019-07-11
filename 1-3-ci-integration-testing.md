@@ -11,7 +11,7 @@ We won't fully automate the process until the next exercise, but by the end of t
 
 Make sure you've completed the first two parts of the tutorial.
 
-I'll assume that you still have all the files in place from the previous three exercises, contained in your `source` directory at the top level of your local clone of the `devops-toolkit` [repostitory](https://github.com/sloanahrens/devops-toolkit).
+I'll assume that you still have all the files in place from the previous two exercises, contained in your `source` directory at the top level of your local clone of the `devops-toolkit` [repostitory](https://github.com/sloanahrens/devops-toolkit).
 
 Your `source` directory should have at least the following structure:
 
@@ -34,11 +34,13 @@ devops-toolkit/
             docker-compose-local-dev-django.html-celery-beat.yaml
 ```
 
+I won't list all the files in the `stockpicker` directory again, but if you have not properly completed [Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1-microservices-django.md) then what follows will probably not work for you.
+
 ### `devops` Development Environment
 
-In this exercise we'll use the `devops` development environment (rather than the `baseimage` dev env from Parts 2 and 3), so make sure you can run it as described [here](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md).
+In this exercise we'll use the `devops` development environment (rather than the `baseimage` dev env from Part 2), so make sure you can run it as described [here](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md).
 
-Make sure you have built the `devops` Docker image, by running the following command from your `devops-toolkit` directory:
+Make sure you have built the `devops` Docker image, by running the following command from your `devops-toolkit` directory on your host OS:
 
 ```bash
 docker build -t devops -f docker/devops/Dockerfile .
@@ -57,7 +59,7 @@ docker run -it \
     /bin/bash
 ```
 
-Run `ls` from inside the container and should see the files you created in the `source` directory:
+Run `ls` from inside the container and you should see the files you created in the `source` directory:
 
 ```
 root@1bc94b877039:/src# ls
@@ -68,7 +70,7 @@ container_environments	django	docker
 
 Thus far we've been able to do what we needed with just our `baseimage`, attached to the code-base via a Docker volume.
 Now we're going to need to take our new DevOps setup a bit further.
-The first thing we'll do is implement our production images.
+The first thing we'll do is implement our production Docker images.
 The `webapp` and `celery` images will ultimately be pushed to a private image repository, and used to (continuously-)deploy our production stack to Kubernetes.
 But I'm getting ahead of myself.
 
@@ -88,7 +90,7 @@ COPY ./django/stockpicker/tickers /src/tickers
 COPY ./django/stockpicker/manage.py /src/manage.py
 ```
 
-The `celery` image will be used for both Celery workers, and the Celery Beat scheduler.
+The `celery` image will be used for Celery workers, as well as the Celery Beat scheduler.
 This image inherits from `baseimage`, sets the `C_FORCE_ROOT` environment variable (needed by Celery when running in a container), sets the working directory to `/src`, and copies into the container all the Django files needed to run the application.
 
 2) `source/docker/webapp/Dockerfile`:
@@ -385,6 +387,8 @@ docker-compose -f docker/docker-compose-local-image-stack.yaml up
 
 If you watch the log output you will see the stack initialize, and after a bit you will see the data update tasks (that we originally saw in Part 1) running.
 
+Eventually you should see working graphs at [http://localhost:8080](http://localhost.8080) that look like what you see live at [https://stockpicker.sloanahrens.com](https://stockpicker.sloanahrens.com).
+
 Destroy the stack by hitting `ctl-c` then running:
 
 ```bash
@@ -409,17 +413,16 @@ WORKDIR /usr/src
 
 RUN apk update && apk upgrade && apk add curl jq
 
-COPY ./docker/stacktest/integration-tests.sh .
+COPY ./docker/scripts/integration-tests.sh .
 RUN chmod 755 /usr/src/integration-tests.sh
 ```
 
-This Dockerfile starts with the [`yikaus/alpine-bash` image](https://github.com/yikaus/docker-alpine-bash), adds a couple more dependencies, and sets up our integration tests script.
+This Dockerfile starts with the [`yikaus/alpine-bash` image](https://github.com/yikaus/docker-alpine-bash), adds a couple more dependencies, and sets up our integration test script.
 
-2) `source/docker/stacktest/integration-tests.sh`:
+2) `source/docker/scripts/integration-tests.sh`:
 
 ```bash
 #!/bin/bash
-
 
 function wait_for_and_test_endpoint {
     period=10
@@ -451,7 +454,6 @@ function wait_for_and_test_endpoint {
     fi
 }
 
-
 echo "SERVICE: $SERVICE"
 
 wait_for_and_test_endpoint "$SERVICE/health/app/"
@@ -471,7 +473,7 @@ We have not yet defined these endpoints, so we need to set them up in the applic
 
 We need to edit two of our pre-existing Django files to add the health check urls and views to the application.
 
-Edit `source/django/stockpicker/stockpicker/views.py` to match:
+1) Edit `source/django/stockpicker/stockpicker/views.py` to match:
 
 ```python
 from django.views.generic import TemplateView
@@ -604,7 +606,7 @@ class QuotesUpdatedHealthCheckView(APIView):
 
 ```
 
-Now edit `source/django/stockpicker/stockpicker/urls.py` to match:
+2) Now edit `source/django/stockpicker/stockpicker/urls.py` to match:
 
 ```python
 from django.urls import path
@@ -647,7 +649,7 @@ urlpatterns = [
 
 ```
 
-Create `source/django/stockpicker/stockpicker/tasks.py` to match:
+3) Create `source/django/stockpicker/stockpicker/tasks.py` with the contents:
 ```python
 from django.db.utils import ProgrammingError
 
@@ -670,7 +672,7 @@ def celery_worker_health_check(self, timestamp):
 
 Now that we have all the files in place, we can finally run our integration tests.
 
-Make sure you are in the `source` directory, and have the `devops` development environment running with:
+Make sure you are in the `source` directory on your host OS, and run the `devops` development environment running with:
 
 ```bash
 docker run -it \
@@ -697,14 +699,13 @@ Now run the local image stack with:
 docker-compose -f docker/docker-compose-local-image-stack.yaml up
 ```
 
-You should see the app initialize and begin to update, like before.
-Now you should be able to go to [`localhost:8080`](http://localhost:8080/) in your favorite browser from your host OS, and see the same thing that you see live at [stockpicker.sloanahrens.com](https://stockpicker.sloanahrens.com).
+You should see the app initialize and begin to update, like before, and again you should be able to go to [`localhost:8080`](http://localhost:8080/) in your favorite browser from your host OS, and see the same thing that you see live at [stockpicker.sloanahrens.com](https://stockpicker.sloanahrens.com).
 
 Leave the app stack running in this tab, and you can look at the log output.
 
 Now we are going to `docker exec` into the running container from a second terminal tab, with:
 
-```bashh
+```bash
 docker exec -it local_devops /bin/bash
 ```
 
