@@ -1,6 +1,6 @@
-# Part 5: Building and maintaining a Kubernetes cluster from CI
+# Part 5: Creating a Kubernetes cluster with `kops` and updating it from CI
 
-### Complete Parts 1-5
+### Complete Parts 1-4
 
 Make sure you've completed the first five parts of the tutorial.
 
@@ -64,6 +64,8 @@ docker run -it \
     devops \
     /bin/bash
 ```
+
+Remember that in this command, the argument `-v $PWD:/src` connects the directory on the host OS from which you _run_ the command, to the `/src` directory inside the container.
 
 Run `ls` from inside the container and should see the files you created in the `source` directory:
 

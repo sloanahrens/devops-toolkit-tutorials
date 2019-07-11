@@ -9,7 +9,7 @@ We won't fully automate the process until the next exercise, but by the end of t
 
 ### Complete Parts 1-2
 
-Make sure you've completed the first two parts of the tutorial.
+Make sure you've completed the the tutorial up through [Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-celery.md).
 
 I'll assume that you still have all the files in place from the previous two exercises, contained in your `source` directory at the top level of your local clone of the `devops-toolkit` [repostitory](https://github.com/sloanahrens/devops-toolkit).
 
@@ -34,11 +34,11 @@ devops-toolkit/
             docker-compose-local-dev-django.html-celery-beat.yaml
 ```
 
-I won't list all the files in the `stockpicker` directory again, but if you have not properly completed [Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1-microservices-django.md) then what follows will probably not work for you.
+I won't list all the files in the `stockpicker` directory again, but if you have not properly completed [Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-celery.md) then what follows will probably not work for you.
 
 ### `devops` Development Environment
 
-In this exercise we'll use the `devops` development environment (rather than the `baseimage` dev env from Part 2), so make sure you can run it as described [here](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md).
+In this exercise we'll go back to using the `devops` development environment (rather than the `baseimage` dev env from Part 2), so make sure you can run it as described [here](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md).
 
 Make sure you have built the `devops` Docker image, by running the following command from your `devops-toolkit` directory on your host OS:
 
@@ -58,6 +58,8 @@ docker run -it \
     devops \
     /bin/bash
 ```
+
+Remember that in this command, the argument `-v $PWD:/src` connects the directory on the host OS from which you _run_ the command, to the `/src` directory inside the container.
 
 Run `ls` from inside the container and you should see the files you created in the `source` directory:
 

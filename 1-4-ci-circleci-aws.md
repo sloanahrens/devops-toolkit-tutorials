@@ -67,9 +67,11 @@ devops-toolkit/
             docker-compose-unit-test.yaml
 ```
 
+I won't list all the files in the `stockpicker` directory again, but if you have not properly completed [Part 3](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-3-ci-integration-testing.md) then what follows will probably not work for you.
+
 ### `devops` Development Environment
 
-In this exercise we'll use the `devops` development environment (rather than the `baseimage` dev env from Parts 2 and 3), so make sure you can run it as described [here](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md).
+In this exercise we'll use the `devops` development environment, so make sure you can run it as described [here](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md).
 
 Make sure you have built the `devops` Docker image, by running the following command from your `devops-toolkit` directory:
 
@@ -77,7 +79,7 @@ Make sure you have built the `devops` Docker image, by running the following com
 docker build -t devops -f docker/devops/Dockerfile .
 ```
 
-Go to your `devops-toolkit/source` directory now, and and start the development environment Docker container with:
+Now go to your `source` directory (at the top level of the `devops-toolkit` directory), and and start the development environment Docker container with:
 
 ```bash
 docker run -it \
@@ -89,6 +91,8 @@ docker run -it \
     devops \
     /bin/bash
 ```
+
+Remember that in this command, the argument `-v $PWD:/src` connects the directory on the host OS from which you _run_ the command, to the `/src` directory inside the container.
 
 Run `ls` from inside the container and should see the files you created in the `source` directory:
 

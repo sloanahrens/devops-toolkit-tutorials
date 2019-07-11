@@ -1,4 +1,4 @@
-# Part 1: Microservices: A Modest Django Web App 
+# Part 1-A: Microservices: A Modest Django Web App, Models and Data 
 
 In order to do our DevOps work, we need a software application to build, test and deploy. 
 We will ultimately deploy our application as several microservices, but first we have to build it. 
@@ -45,8 +45,17 @@ We are going to be using it enough that I think you will begin to get a feel for
 Once you have Docker installed and the development environment working, start it (from the `devops-toolkit` directory) with:
 
 ```bash
-docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/src --rm --name local_devops devops /bin/bash
+docker run -it \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v $PWD:/src \
+  --rm \
+  --name \
+  local_devops \
+  devops \
+  /bin/bash
 ```
+
+Remember that in this command, the argument `-v $PWD:/src` connects the directory on the host OS from which you _run_ the command, to the `/src` directory inside the container.
 
 Now we are running inside the container, and you should see a prompt similar to:
 
@@ -54,7 +63,7 @@ Now we are running inside the container, and you should see a prompt similar to:
 root@1c80236a5992:/src#
 ```
 
-Now exit the container (type `exit`), because we are going to need to run the command from a different directory.
+*Now exit the container (type `exit`)*, because we are going to need to run the command from a different directory.
 
 ### Use a new `source` directory
 
@@ -67,7 +76,7 @@ The [`.gitignore` file](https://git-scm.com/docs/gitignore) already knows to ign
 Later on we'll connect the `source` directory to a new GitHub repository, so we can attach CircleCI to the project we are building.
 This directory structure is assumed throughout the rest of the tutorial.
 
-From inside the `devops-toolkit` directory, create a new directory called `source`, and go to it with:
+From inside the `devops-toolkit` directory on your host OS, create a new directory called `source`, and go to it:
 
 ```bash
 mkdir -p source && cd source
@@ -75,7 +84,7 @@ mkdir -p source && cd source
 
 This is going to be our working directory from now on, so it's important to get it in the right place.
 
-Now we're going to run the same `devops` development environment again, but from the new `source` directory instead of the parent `devops-toolkit` directory.
+Now we're going to run the same `devops` development environment again, _but from the new `source` directory_ instead of the parent `devops-toolkit` directory.
 So, from the `source` directory, run:
 
 ```bash
@@ -87,6 +96,8 @@ docker run -it \
   devops \
   /bin/bash
 ```
+
+Remember that in this command, the argument `-v $PWD:/src` points the directory on the host OS from which you _run_ the command, to the `/src` directory inside the container.
 
 If you get an error message like:
 
@@ -136,6 +147,14 @@ So run:
 
 ```bash
 pip freeze > /src/django/requirements.txt
+```
+
+Notice that we added `-p 8000:8000` to forward the port `8000`.
+
+If you exit out of the dev environment and any time, you can run it again, we have to install our `pip` requirements again, so run:
+
+```bash
+pip install -r /src/django/requirements.txt
 ```
 
 Now that Django is installed, we can create a [new Django project](https://docs.djangoproject.com/en/2.2/intro/tutorial01/#creating-a-project), with:
@@ -214,9 +233,9 @@ INSTALLED_APPS = [
 ### Django database setting
 
 Django is compatible with a number of different [databases](https://docs.djangoproject.com/en/2.2/ref/databases/).
-For this tutorial we are going to use the default [SQLite](https://sqlite.org/index.html) database.
+For this exercise we are going to use the default [SQLite](https://sqlite.org/index.html) database.
 It should not be used in production but can be useful for development and code-testing, and provides conceptual simplicity at this stage of the tutorial.
-The [containerization tutorial](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-celery.md) adds a Postgres database to the development stack.
+The [containerization exercise](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-celery.md) adds a Postgres database to the development stack.
 
 ### Build and test models
 
@@ -421,13 +440,26 @@ OK
 Destroying test database for alias 'default'...
 ```
 
-We have models and unit tests! Now we need some data.
-
+We have models and unit tests! 
+Now we need some data.
 
 ### Stock quote utility function
 
 We're going to build code to populate our database. 
-The first thing we will need is a utility function to gather the stock price data.
+In order for this code to work, we will need to install some more python dependencies, with:
+
+```bash
+pip install fix-yahoo-finance==0.1.33
+pip install pandas-datareader==0.7.0
+```
+
+And remember to `pip freeze` again:
+
+```bash
+pip freeze > /src/django/requirements.txt
+```
+
+The next thing we will need is a utility function to gather the stock price data.
 This code uses the analytical properties on the `Quotes` model to do some arithmetic.
 Don't get too caught up in the math that this code is doing, unless you're into this sort of thing (in that case remember it's only supposed to be a silly model that makes graphs); it will hopefully make more sense once you see the graphs of the data.
 
@@ -555,19 +587,6 @@ def update_ticker_data(symbol, force=False):
 
     update_quotes(ticker_symbol=symbol, force_update=force)
 
-```
-
-In order for this code to work, we will need to install some more python dependencies, with:
-
-```bash
-pip install fix-yahoo-finance==0.1.33
-pip install pandas-datareader==0.7.0
-```
-
-And remember to `pip freeze` again:
-
-```bash
-pip freeze > /src/django/requirements.txt
 ```
 
 ### Load data with Django management commands
@@ -707,606 +726,11 @@ Updating: TSLA
 Found 1255 quotes for TSLA from 2014-07-10 to 2019-07-04
 ```
 
-Now we have data! Next we need some views.
+Now we have data! 
 
-### Install Django REST Framework
-
-Our API views will use the [Django REST Framework](), so we need to install it with:
-
-```bash
-pip install djangorestframework==3.9.3
-pip freeze > /src/django/requirements.txt
-```
-
-We also need to add `'rest_framework'` to `INSTALLED_APPS` in `settings.py`:
-
-`source/django/stockpicker/stockpicker/settings.py` should include:
-```python
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
-    'rest_framework',
-
-    'stockpicker',
-    'tickers',
-]
-```
-
-### Building API views, with tests
-
-To build our API views, accompanying URLs, and unit tests, we will need to edit four files.
-
-**Step 1**: Create the following file.
-
-`source/django/stockpicker/stockpicker/views.py`:
-```python
-from django.views.generic import TemplateView
-
-
-class PickerPageView(TemplateView):
-
-    template_name = 'picker.html'
-
-```
-
-**Step 2**:  We need to edit our [`urls.py` file](https://tutorial.djangogirls.org/en/django_urls/).
-
-Edit `source/django/stockpicker/stockicker/urls.py` to match:
-```python
-from django.urls import path
-from django.contrib import admin
-from django.conf.urls.static import static
-from django.conf import settings
-
-from stockpicker.views import PickerPageView
-from tickers.views import (TickersLoadedView,
-                           SearchTickerDataView,
-                           GetRecommendationsView,
-                           AddTickerView)
-
-urlpatterns = [
-    path('admin/', admin.site.urls),
-
-    path('', PickerPageView.as_view(), name='picker_page'),
-
-    path('tickers/tickerlist/', TickersLoadedView.as_view(), name='tickers_loaded'),
-
-    path('tickers/tickerdata/', SearchTickerDataView.as_view(), name='search_ticker_data'),
-
-    path('tickers/recommendations/', GetRecommendationsView.as_view(), name='get_recommendations'),
-
-    path('tickers/addticker/', AddTickerView.as_view(), name='add_ticker'),
-
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-
-```
-
-**Step 3**:  Edit the contents of `tickers/views` file.
-
-`source/django/stockpicker/tickers/views.py` should match:
-```python
-from django.views.generic import TemplateView
-from django.conf import settings
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.status import HTTP_412_PRECONDITION_FAILED, HTTP_200_OK
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import AllowAny
-
-from tickers.models import Ticker, Quote
-from tickers.utility import update_ticker_data
-
-
-class SearchTickerDataView(APIView):
-    authentication_classes = (SessionAuthentication,)
-    permission_classes = (AllowAny,)
-
-    def post(self, request, format=None):
-
-        ticker_symbol = request.data['ticker']
-        try:
-            ticker = Ticker.objects.get(symbol=ticker_symbol)
-        except Ticker.DoesNotExist:
-            return Response({'success': False, 'error': 'Ticker "{0}" does not exist'.format(ticker_symbol)},
-                            status=HTTP_412_PRECONDITION_FAILED)
-
-        return Response({
-            'success': True,
-            'ticker': ticker.symbol,
-            'index': settings.INDEX_TICKER,
-            'avg_weeks': settings.MOVING_AVERAGE_WEEKS,
-            'results': [quote.serialize() for quote in ticker.quote_set.order_by('date')]
-        }, status=HTTP_200_OK)
-
-
-class TickersLoadedView(APIView):
-    authentication_classes = (SessionAuthentication,)
-    permission_classes = (AllowAny,)
-
-    def get(self, request, format=None):
-
-        return Response({'tickers': [t.symbol for t in Ticker.objects.order_by('symbol')]}, status=HTTP_200_OK)
-
-
-class GetRecommendationsView(APIView):
-    authentication_classes = (SessionAuthentication,)
-    permission_classes = (AllowAny,)
-
-    def get(self, request, format=None):
-
-        try:
-            index_ticker = Ticker.objects.get(symbol=settings.INDEX_TICKER)
-        except Ticker.DoesNotExist:
-            return Response({'success': False, 'error': 'Ticker "{0}" does not exist'.format(settings.INDEX_TICKER)},
-                            status=HTTP_412_PRECONDITION_FAILED)
-
-        if index_ticker.latest_quote_date() is None:
-            return Response({'success': False, 'error': 'No Quotes available.'}, status=HTTP_412_PRECONDITION_FAILED)
-
-        sell_hits = Quote.objects.filter(date=index_ticker.latest_quote_date(),
-                                         sac_to_sacma_ratio__gt=1).order_by('-sac_to_sacma_ratio')
-        buy_hits = Quote.objects.filter(date=index_ticker.latest_quote_date(),
-                                        sac_to_sacma_ratio__gt=0,
-                                        sac_to_sacma_ratio__lt=1).order_by('sac_to_sacma_ratio')
-        return Response({
-            'success': True,
-            'latest_data_date': index_ticker.latest_quote_date().strftime('%Y-%m-%d'),
-            'sell_hits': [quote.serialize() for quote in list(sell_hits)[:25]],
-            'buy_hits': [quote.serialize() for quote in list(buy_hits)[-25:]]
-        }, status=HTTP_200_OK)
-
-
-class AddTickerView(APIView):
-    authentication_classes = (SessionAuthentication,)
-    permission_classes = (AllowAny,)
-
-    def post(self, request, format=None):
-
-        ticker_symbol = request.data['ticker']
-        update_ticker_data(ticker_symbol, force=True)
-
-        return Response({'success': True}, status=HTTP_200_OK)
-
-```
-
-**Step 4**: Finally, we need to add unit tests for the views.
-
-`source/django/stockpicker/tickers/tests.py` should match:
-```python
-import json
-import random
-
-from django.utils.timezone import datetime
-from django.test import TestCase
-from django.urls import reverse
-from django.conf import settings
-
-from tickers.models import Ticker, Quote
-
-
-def fake_quote_serialize(quote):
-    return {
-        'symbol': quote.ticker.symbol,
-        'date': quote.date.strftime('%Y-%m-%d'),
-        'ac': round(float(quote.adj_close), settings.DECIMAL_DIGITS),
-        'iac': round(float(quote.index_adj_close), settings.DECIMAL_DIGITS),
-        'sac': round(float(quote.scaled_adj_close), settings.DECIMAL_DIGITS),
-        'sac_ma': round(float(quote.sac_moving_average), settings.DECIMAL_DIGITS),
-        'ratio': round(float(quote.sac_to_sacma_ratio), settings.DECIMAL_DIGITS)
-    }
-
-
-class TickerModelTests(TestCase):
-
-    def setUp(self):
-        Ticker.objects.create(symbol='TEST')
-
-    def test_ticker_exists(self):
-        self.assertTrue(Ticker.objects.get(symbol='TEST').id > 0)
-
-
-class QuoteModelTests(TestCase):
-
-    def setUp(self):
-        Quote.objects.create(ticker=Ticker.objects.create(symbol='TEST'), date=datetime.today())
-
-    def test_quote_exists(self):
-        ticker = Ticker.objects.get(symbol='TEST')
-        self.assertTrue(Quote.objects.get(ticker=ticker, date=datetime.today()).id > 0)
-
-    def test_quote_serializes(self):
-        ticker = Ticker.objects.get(symbol='TEST')
-        quote = Quote.objects.get(ticker=ticker, date=datetime.today())
-        self.assertEqual(
-            json.dumps(quote.serialize()),
-            json.dumps(fake_quote_serialize(quote)))
-
-
-class TickersLoadedViewTests(TestCase):
-
-    def test_no_tickers(self):
-        response = self.client.get(reverse('tickers_loaded'))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            json.dumps(response.data),
-            json.dumps({'tickers': []}))
-
-    def test_ticker_exists(self):
-        Ticker.objects.create(symbol='TEST')
-        response = self.client.get(reverse('tickers_loaded'))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            json.dumps(response.data),
-            json.dumps({'tickers': ["TEST"]}))
-
-
-class SearchTickerDataViewTests(TestCase):
-
-    def test_no_ticker(self):
-        response = self.client.post(reverse('search_ticker_data'),
-                                    content_type="application/json",
-                                    data=json.dumps({'ticker': 'NOPE'}))
-        self.assertEqual(response.status_code, 412)
-        self.assertEqual(
-            json.dumps(response.data),
-            json.dumps({'success': False,
-                        'error': 'Ticker "NOPE" does not exist'}))
-
-    def test_ticker_exists_but_no_data(self):
-        Ticker.objects.create(symbol='TEST')
-        response = self.client.post(reverse('search_ticker_data'),
-                                    content_type="application/json",
-                                    data=json.dumps({'ticker': 'TEST'}))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            json.dumps(response.data),
-            json.dumps({'success': True,
-                        'ticker': 'TEST',
-                        'index': settings.INDEX_TICKER,
-                        'avg_weeks': 86, 'results': []}))
-
-    def test_ticker_has_one_quote(self):
-        def rand_value():
-            return random.uniform(0, 10)
-        ticker = Ticker.objects.create(symbol='TEST')
-        quote = Quote.objects.create(ticker=ticker, date=datetime.today())
-        quote.adj_close = rand_value()
-        quote.index_adj_close = rand_value()
-        quote.scaled_adj_close = rand_value()
-        quote.sac_moving_average = rand_value()
-        quote.sac_to_sacma_ratio = rand_value()
-        quote.save()
-        response = self.client.post(reverse('search_ticker_data'),
-                                    content_type="application/json",
-                                    data=json.dumps({'ticker': 'TEST'}))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            json.dumps(response.data),
-            json.dumps({'success': True,
-                        'ticker': 'TEST',
-                        'index': settings.INDEX_TICKER,
-                        'avg_weeks': 86, 'results': [fake_quote_serialize(quote)]}))
-
-
-class GetRecommendationsViewTests(TestCase):
-
-    def test_index_ticker_does_not_exist(self):
-        response = self.client.get(reverse('get_recommendations'))
-        self.assertEqual(response.status_code, 412)
-        self.assertEqual(
-            json.dumps(response.data),
-            json.dumps({'success': False,
-                        'error': 'Ticker "{0}" does not exist'.format(settings.INDEX_TICKER)}))
-
-    def test_no_quotes_available(self):
-        Ticker.objects.create(symbol=settings.INDEX_TICKER)
-        response = self.client.get(reverse('get_recommendations'))
-        self.assertEqual(response.status_code, 412)
-        self.assertEqual(
-            json.dumps(response.data),
-            json.dumps({'success': False,
-                        'error': 'No Quotes available.'}))
-
-    def test_buy_recommendation(self):
-        Quote.objects.create(ticker=Ticker.objects.create(symbol=settings.INDEX_TICKER),
-                             date=datetime.today())
-        quote = Quote.objects.create(ticker=Ticker.objects.create(symbol='TEST'),
-                                     date=datetime.today())
-        quote.sac_to_sacma_ratio = 0.5
-        quote.save()
-        response = self.client.get(reverse('get_recommendations'))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            json.dumps(response.data),
-            json.dumps({'success': True,
-                        'latest_data_date': quote.date.strftime('%Y-%m-%d'),
-                        'sell_hits': [],
-                        'buy_hits': [fake_quote_serialize(quote)]}))
-
-    def test_sell_recommendation(self):
-        Quote.objects.create(ticker=Ticker.objects.create(symbol=settings.INDEX_TICKER),
-                             date=datetime.today())
-        quote = Quote.objects.create(ticker=Ticker.objects.create(symbol='TEST'),
-                                     date=datetime.today())
-        quote.sac_to_sacma_ratio = 1.5
-        quote.save()
-        response = self.client.get(reverse('get_recommendations'))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            json.dumps(response.data),
-            json.dumps({'success': True,
-                        'latest_data_date': quote.date.strftime('%Y-%m-%d'),
-                        'sell_hits': [fake_quote_serialize(quote)],
-                        'buy_hits': []}))
-
-```
-
-Now we can run the tests with `python manage.py test` again, and the output should look like:
-
-```
-root@d100b5105a84:/src/stockpicker# python manage.py test
-Creating test database for alias 'default'...
-System check identified no issues (0 silenced).
-............
-----------------------------------------------------------------------
-Ran 12 tests in 0.305s
-
-OK
-Destroying test database for alias 'default'...
-```
-
-### `INSTALLED_APPS` Django setting
-
-We also need to set a few Django settings for static files.
-Add the following to the bottom of `settings.py`:
-
-`source/django/stockpicker/stockpicker/settings.py` should include:
-```python
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
-STATIC_URL = '/static/'
-STATIC_ROOT = "/src/_static"
-```
-
-We will need to be sure that the `stockpicker` app itself has been added to `INSTALLED_APPS` in settings, so that the `staticfiles` app will find our static files.
-So if needed, edit `settings.py` so that the `INSTALLED_APPS` setting matches below.
-
-So `source/django/stockpicker/stockpicker/settings.py` should include:
-```python
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
-    'rest_framework',
-
-    'stockpicker',
-    'tickers',
-]
-```
-
-### Front-end files
-
-For our main app page we will need an HTML [Django Template](https://docs.djangoproject.com/en/2.2/topics/templates/).
-So we'll need to create `picker.html` with the following contents.
-
-`source/django/stockpicker/stockpicker/templates/picker.html` should match:
-```html
-{% load static %}
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>{% block page_title %}Stock-Picker{% endblock %}</title>
-
-    <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
-
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
-
-    <link rel="stylesheet" type="text/css" href="{% static 'css/app.css' %}">
-
-    <!--[if lt IE 9]>
-    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-  </head>
-  <body>
-
-    <div class="jumbotron">
-      <div class="container">
-          <h2>Toy Stock-Picker</h2>
-          <p>
-              This app uses an 86-week moving average of scaled daily price (adjusted closing price divided by SPY index value), as a decision boundary for <em>buy</em> versus <em>sell</em> classifications.</h4>
-          </p>
-          <div id="error_message" style="display:none;" class="alert alert-danger">add ticker error</div>
-          <div id="success_message" style="display:none;" class="alert alert-success">add ticker success</div>
-      </div>
-    </div>
-
-    <div class='container'>
-
-        <div class="row">
-          <div class="col-xs-2">
-              <form id="add_ticker_form">
-                <input type="text" style="width:80%" class="form-control" id="add_ticker_text" placeholder="TICKER">
-                <button type="submit" id="add_ticker_btn" style="width:80%" class="btn btn-default">
-                  Add Ticker
-                </button>
-              </form>
-              <h4 style="margin-bottom: 5px;">Tickers Loaded</h4>
-              <ul id="tickerlist"></ul>
-          </div>
-          <div class="col-xs-10">
-              <h3 style="margin-top: 0;">Latest data date: <span id="latest_date"></span></h3>
-              <div class="chart-cont">
-                <div id="chart1stats" class="stats pull-right">*</div>
-                <div id='chart1' class="chart"></div>
-                <div class='marker' style="display:none;"></div>
-                <div style="clear:both;"></div>
-              </div>
-              <button class="unzoom btn btn-default">
-                Reset Zoom
-              </button>
-              <div class="chart-cont">
-                <div id="chart2stats" class="stats pull-right">*</div>
-                <div id='chart2' class="chart"></div>
-                <div class='marker' style="display:none;"></div>
-                <div style="clear:both;"></div>
-              </div>
-              <hr>
-              <div>Filter: <span id="filter_rec"></span></div>
-            <div class="row">
-              <div class="col-xs-5">
-                <h3>Buy (<span id="buy_count"></span>)</h3>
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th>sym (gf)</th>
-                      <th>ac</th>
-                      <th>sac</th>
-                      <th>sacma</th>
-                      <th>ratio</th>
-                    </tr>
-                  </thead>
-                </table>
-              </div>
-              <div class="col-xs-5">
-                <h3>Sell (<span id="sell_count"></span>)</h3>
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th>sym (gf)</th>
-                      <th>ac</th>
-                      <th>sac</th>
-                      <th>sacma</th>
-                      <th>ratio</th>
-                    </tr>
-                  </thead>
-                </table>
-              </div>
-            </div>
-            <div class="row" style="height: 500px; overflow:auto;">
-              <div class="col-xs-5">
-                <table class="table">
-                  <tbody id="buy_table"></tbody>
-                </table>
-              </div>
-              <div class="col-xs-5">
-                <table class="table">
-                  <tbody id="sell_table"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-
-    </div>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-
-    <script type="text/javascript" src="{% static 'js/lib/jquery.flot.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/lib/jquery.flot.selection.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/picker.js' %}"></script>
-
-  </body>
-</html>
-```
-
-We also need some static files for the front-end, and now we're going to cheat a little bit, and just copy some code files over from the existing `devops-toolkit` source.
-Feel free to explore these files as you like (try not to judge my JavaScript; I know there are better ways, I just haven't gotten that far yet), but I'm not going to reproduce them here.
-
-From your host OS, in the `devops-toolkit` directory, run (the equivalent of):
-
-```bash
-cp -R django/stockpicker/stockpicker/static/ source/django/stockpicker/stockpicker/static/
-```
-
-*Note:* If your `source` directory is NOT in the root of your local copy of `devops-toolkit`, this command will fail.
-I'll leave fixing it to you as homework, in that case.
-
-
-You should now see a file structure that looks like:
-
-```
-stockpicker/
-    stockpicker/
-        static/
-            css/
-                app.css
-            js/
-                lib/
-                    jquery.flot.min.js
-                    jquery.flot.selection.js
-                picker.js
-            favicon.ico
-    tickers/
-    ...
-```
-
-### Port-forwarding from the development environment
-
-Now we are ready to run the [Django development server](https://docs.djangoproject.com/en/2.2/intro/tutorial01/#the-development-server), but since we are running in a Docker container we will not be able to access the running application from the host OS.
-
-To get around this, we need to modify our development environment command to forward the appropriate port.
-If you are currently running the development environment, exit by typing `exit` and hitting enter.
-As always, make sure you are in your `source` directory, and if your devops environment is running, `exit` out of it. 
-Now run:
-
-```bash
-docker run -it \
-  -p 8000:8000 \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v $PWD:/src \
-  --name local_devops \
-  --rm \
-  devops \
-  /bin/bash
-```
-
-Notice that we added `-p 8000:8000` to forward the port `8000`.
-
-But now, since we recycled our dev environment, we have to install our `pip` requirements again, so run:
-
-```bash
-pip install -r /src/django/requirements.txt
-```
-
-Now run the [`collectstatic` management command](https://stackoverflow.com/questions/34586114/whats-the-point-of-djangos-collectstatic):
-
-```bash
-cd /src/django/stockpicker && python manage.py collectstatic
-```
-
-You should see:
-
-```
-root@89668020f81d:/src/django# cd /src/django/stockpicker && python manage.py collectstatic
-
-157 static files copied to '/src/_static'.
-root@89668020f81d:/src/django/stockpicker#
-```
-
-Now, we can finally run our development server, with:
-
-```bash
-cd /src/django/stockpicker
-python manage.py runserver 0.0.0.0:8000
-```
-
-You should see the webserver running in the log output. Leave it running and open your web browser.
-
-Now you should be able to go to [`localhost:8000`](http://localhost:8000/) in your [favorite web-browser](https://www.mozilla.org) from your host OS, and see the same thing that you see live at [stockpicker.sloanahrens.com](https://stockpicker.sloanahrens.com).
-
-You can stop the development server with `ctl-c` and exit your running `devops` container by typing `exit` and hitting enter.
+Next we need some views and a UI.
+We'll add all that in the next exercise, Part 1B.
 
 [Prev: Part 0](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md)
 |
-[Next: Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-celery.md)
+[Next: Part 1B](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1b-microservices-django-interface.md)

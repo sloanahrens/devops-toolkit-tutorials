@@ -11,7 +11,7 @@ You can find installers for the various systems [here](https://docs.docker.com/c
 
 ### Complete Part 1
 
-Make sure you have completed [Part 1](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1-microservices-django.md) of the tutorials already.
+Make sure you have completed [Part 1A](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1a-microservices-django-data.md) and [Part 1B](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1b-microservices-django-interface.md) of the tutorials already.
 
 I'll assume that you have all the other files from Part 1 still in place in the `devops-toolkit/source/` directory.
 This tutorial should hopefully be [idempotent](https://en.wikipedia.org/wiki/Idempotence), so if you already have the other files in place too, it should still work.
@@ -22,7 +22,7 @@ Your `devops-toolkit/source` directory should should contain at least the direct
 
 ### Development environment
 
-We're not going to use the [`devops` development environment](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md) in this tutorial like we did in Part 1.
+We're not going to use the [`devops` development environment](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md) in this exercise like we did in Part 1.
 Using the base Docker image for our application turns out to be a slightly better way, and hopefully less confusing in the end, since we will be using one of our deliverables as a development tool.
 
 ### PostgreSQL
@@ -678,6 +678,6 @@ Now restart the environment again, and shortly you should see the data update ta
 
 Eventually you should see working graphs at [http://localhost:8000](http://localhost.8000) that look like what you see live at [https://stockpicker.sloanahrens.com](https://stockpicker.sloanahrens.com).
 
-[Prev: Part 1](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1-microservices-django.md)
+[Prev: Part 1B](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1b-microservices-django-interface.md)
 |
 [Next: Part 3](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-3-ci-integration-testing.md)
