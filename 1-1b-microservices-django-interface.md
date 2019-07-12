@@ -634,6 +634,8 @@ root@89668020f81d:/src/django# cd /src/django/stockpicker && python manage.py co
 root@89668020f81d:/src/django/stockpicker#
 ```
 
+### Run the Django development server
+
 Now, we can finally run our development server, with:
 
 ```bash
@@ -641,7 +643,8 @@ cd /src/django/stockpicker
 python manage.py runserver 0.0.0.0:8000
 ```
 
-You should see the webserver running in the log output. Leave it running and open your web browser.
+You should see the webserver running in the log output. 
+Leave it running and open your web browser.
 
 Now you should be able to go to [`localhost:8000`](http://localhost:8000/) in your [favorite web-browser](https://www.mozilla.org) from your host OS, and see the same thing that you see live at [stockpicker.sloanahrens.com](https://stockpicker.sloanahrens.com).
 

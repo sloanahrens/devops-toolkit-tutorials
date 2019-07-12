@@ -9,7 +9,7 @@ For both, you will need Docker and `git` installed in your host OS.
 If you do not have Docker installed on your system, you will need to install the appropriate version for your operating system.
 Here are [instructions for Mac OSX](https://docs.docker.com/docker-for-mac/install/).
 
-You can check that Docker is working by running:
+You can check that Docker is working by starting a terminal session and running:
 
 ```bash
 docker ps
