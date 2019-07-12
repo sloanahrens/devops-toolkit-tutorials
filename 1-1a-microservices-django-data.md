@@ -151,7 +151,7 @@ pip freeze > /src/django/requirements.txt
 
 Notice that we added `-p 8000:8000` to forward the port `8000`.
 
-If you exit out of the dev environment and any time, you can run it again, we have to install our `pip` requirements again, so run:
+If you exit out of the dev environment and any time, you can run it again, you'll have to install the `pip` requirements again, so run:
 
 ```bash
 pip install -r /src/django/requirements.txt
@@ -215,7 +215,7 @@ We need to edit the Django settings file now, so that the application will recog
 Edit `stockpicker/stockpicker/settings.py` to include the setting below.
 You can just paste this code into the bottom of your `settings.py` file, or replace the existing `INSTALLED_APPS` setting.
 
-`source/django/stockpicker/stockpicker/settings.py` should include:
+So `source/django/stockpicker/stockpicker/settings.py` should include:
 ```python
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -456,6 +456,14 @@ pip install pandas-datareader==0.7.0
 And remember to `pip freeze` again:
 
 ```bash
+pip freeze > /src/django/requirements.txt
+```
+
+Or you can run those three commands all at once with:
+
+```bash
+pip install fix-yahoo-finance==0.1.33 && \
+pip install pandas-datareader==0.7.0 && \
 pip freeze > /src/django/requirements.txt
 ```
 

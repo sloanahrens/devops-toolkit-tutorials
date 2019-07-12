@@ -36,7 +36,7 @@ We made it through Part 1 using only Sqlite, but since we will be need to run mu
 We will need to add the [psycopg2 adapter](https://pypi.org/project/psycopg2/) to our `pip` requirements, as well as a few other Python dependencies, including [Celery](), [redis](), and [django-redis-cache]().
 This time we will simply edit the `source/django/requirements.txt` file.
 
-`source/django/requirements.txt` sound match:
+So your `source/django/requirements.txt` needs to match:
 ```
 amqp==2.5.0
 awscli==1.16.193
@@ -224,7 +224,7 @@ From your local `source` directory, on your host OS, run:
 docker-compose -f docker/docker-compose-local-dev-django.yaml up
 ```
 
-Now you should be able to access the running app in your browswer at [http://localhost:8000/](http://localhost:8000/).
+Now you should be able to access the running app in your browser at [http://localhost:8000/](http://localhost:8000/).
 
 You can watch the log output for the two containers in the terminal tab from which you ran the `docker-compose up` command.
 (You can add `-d` to the command to run in detached mode.)
@@ -554,7 +554,15 @@ You can wipe your volume and start over by exiting and removing the current stac
 docker volume rm docker_postgres_data
 ```
 
+You can see existing Docker volumes with `docker volume ls`.
+
 Now re-start the development stack, `exec` into the `local_dev_django` container, and run the above Python commands again, and you should see data-building task output.
+
+When you're finished with the development stack you can `ctl-c` to stop it, the take it down with:
+
+```bash
+docker-compose -f docker/docker-compose-local-dev-django-celery.yaml down
+```
 
 ### Celery Beat
 
@@ -643,7 +651,7 @@ volumes:
 This is the same as `docker-compose-local-dev-django-celery.yaml` with the addition of the Celery beat scheduler container.
 
 The default Celery schedule runs the stock quote data update task once every three hours on buisiness days.
-If you want to make it run more-or-less immediately, you can update `CELERY_BEAT_SCHEDULE` in `source/django/stockpicker/stockpicker/settings.py` to match:
+If you want to make it run more-or-less immediately, you can update `CELERY_BEAT_SCHEDULE` in `source/django/stockpicker/stockpicker/settings.py` to match (or you can just copy this to the bottom of the `settings.py` file):
 
 ```python
 CELERY_BEAT_SCHEDULE = {
@@ -677,6 +685,12 @@ rm django/stockpicker/celerybeat*
 Now restart the environment again, and shortly you should see the data update task executing in the log output.
 
 Eventually you should see working graphs at [http://localhost:8000](http://localhost.8000) that look like what you see live at [https://stockpicker.sloanahrens.com](https://stockpicker.sloanahrens.com).
+
+When you're finished with the development stack you can `ctl-c` to stop it, the take it down with:
+
+```bash
+docker-compose -f docker/docker-compose-local-dev-django-celery-beat.yaml down
+```
 
 [Prev: Part 1B](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1b-microservices-django-interface.md)
 |

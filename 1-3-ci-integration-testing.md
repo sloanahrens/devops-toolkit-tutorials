@@ -36,37 +36,15 @@ devops-toolkit/
 
 I won't list all the files in the `stockpicker` directory again, but if you have not properly completed [Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-celery.md) then what follows will probably not work for you.
 
-### `devops` Development Environment
+### Development Environment
 
-In this exercise we'll go back to using the `devops` development environment (rather than the `baseimage` dev env from Part 2), so make sure you can run it as described [here](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/0-local-dev-env-devops.md).
+We won't really use a development environment, per se, in this exercise, because Docker and Docker-Compose will do what we need.
 
-Make sure you have built the `devops` Docker image, by running the following command from your `devops-toolkit` directory on your host OS:
+### Install Docker-Compose
 
-```bash
-docker build -t devops -f docker/devops/Dockerfile .
-```
-
-Go to your `source` directory now, and and start the development environment Docker container with:
-
-```bash
-docker run -it \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -v $PWD:/src \
-    --rm \
-    --name \
-    local_devops \
-    devops \
-    /bin/bash
-```
-
-Remember that in this command, the argument `-v $PWD:/src` connects the directory on the host OS from which you _run_ the command, to the `/src` directory inside the container.
-
-Run `ls` from inside the container and you should see the files you created in the `source` directory:
-
-```
-root@1bc94b877039:/src# ls
-container_environments	django	docker
-```
+If you don't have [Docker-Compose](https://docs.docker.com/compose/) installed on your host OS yet, you will need to install it now.
+You can find installers for the various systems [here](https://docs.docker.com/compose/install/).
+e
 
 ### `webapp` and `celery` images
 
@@ -108,7 +86,7 @@ COPY ./django/stockpicker/stockpicker /src/stockpicker
 COPY ./django/stockpicker/tickers /src/tickers
 COPY ./django/stockpicker/manage.py /src/manage.py
 
-COPY ./docker/scripts/initialize-webapp-prod.sh /src/entrypoint.sh
+COPY ./docker/scripts/initialize-webapp.sh /src/entrypoint.sh
 RUN chmod 755 /src/entrypoint.sh
 ENTRYPOINT ["/src/entrypoint.sh"]
 ```
@@ -117,7 +95,7 @@ The `webapp` image will be used to run the Django web application.
 This image is similar to the `celery` image, but also exposes port `8001` (where the web app will be listening for requests), and uses an `ENTRYPOINT` to run the application via a Bash script.
 The entrypoint script is copied into the image, given proper executable permissions, then defined as the application entrypoint.
 
-3) `source docker/scripts/initialize-webapp-prod.sh`:
+3) `source docker/scripts/initialize-webapp.sh`:
 
 ```bash
 #!/bin/bash
@@ -237,13 +215,13 @@ services:
      - ../container_environments/test-stack.yaml
 ```
 
-Now, from the `devops` development environment, build the `baseimage` image with:
+Now, from you `source` directory (on your host OS), build the `baseimage` image with:
 
 ```bash
 docker build -t baseimage -f docker/baseimage/Dockerfile .
 ```
 
-Build the `webapp` image with:
+Now build the `webapp` image with:
 
 ```bash
 docker build -t webapp -f docker/webapp/Dockerfile .
@@ -264,7 +242,6 @@ docker-compose -f docker/docker-compose-unit-test.yaml run unit-test
 You should see output similar to:
 
 ```
-root@f2f32c4db846:/src# docker-compose -f docker/docker-compose-unit-test.yaml run unit-test
 Creating network "docker_default" with the default driver
 Creating stockpicker_postgres ... done
 wait-for-it.sh: waiting 15 seconds for postgres:5432
@@ -385,6 +362,7 @@ We can run the local image stack with:
 
 ```bash
 docker-compose -f docker/docker-compose-local-image-stack.yaml up
+
 ```
 
 If you watch the log output you will see the stack initialize, and after a bit you will see the data update tasks (that we originally saw in Part 1) running.
@@ -475,7 +453,27 @@ We have not yet defined these endpoints, so we need to set them up in the applic
 
 We need to edit two of our pre-existing Django files to add the health check urls and views to the application.
 
-1) Edit `source/django/stockpicker/stockpicker/views.py` to match:
+
+1) Create `source/django/stockpicker/stockpicker/tasks.py` with the contents:
+```python
+from django.db.utils import ProgrammingError
+
+from stockpicker.celery import app
+from tickers.models import Ticker
+
+
+@app.task(bind=True, hard_time_limit=5)
+def celery_worker_health_check(self, timestamp):
+
+    try:
+        Ticker.objects.all().count()
+    except ProgrammingError:
+        return None
+    return timestamp
+
+```
+
+2) Edit `source/django/stockpicker/stockpicker/views.py` to match:
 
 ```python
 from django.views.generic import TemplateView
@@ -491,7 +489,7 @@ from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import AllowAny
 
-from tickers.models import Ticker
+from tickers.models import Ticker, Quote
 from stockpicker.tasks import celery_worker_health_check
 
 
@@ -506,6 +504,13 @@ class AppHealthCheckView(APIView):
         return Response({'status': 'healthy'})
 
 
+def postgres_error_response(err):
+    return Response(data={'status': 'unhealthy',
+                          'reason': 'database query failed (ProgrammingError)',
+                          'exception': str(err)},
+                    status=HTTP_412_PRECONDITION_FAILED)
+
+
 class DatabaseHealthCheckView(APIView):
     authentication_classes = (SessionAuthentication,)
     permission_classes = (AllowAny,)
@@ -516,12 +521,8 @@ class DatabaseHealthCheckView(APIView):
             ticker_count = Ticker.objects.all().count()
             return Response({'status': 'healthy',
                              'ticker_count': ticker_count})
-
         except ProgrammingError as e:
-            Response(data={'status': 'unhealthy',
-                           'reason': 'database query failed (ProgrammingError)',
-                           'exception': str(e)},
-                     status=HTTP_412_PRECONDITION_FAILED)
+            return postgres_error_response(e)
 
 
 class CeleryHealthCheckView(APIView):
@@ -530,25 +531,22 @@ class CeleryHealthCheckView(APIView):
 
     def get(self, request, *args, **kwargs):
         current_datetime = now().strftime('%c')
-        task = celery_worker_health_check.delay(current_datetime)
         try:
-            #  Trigger a health check job (run db query from the worker).
+            # trigger a health check job (run db query from the worker).
+            task = celery_worker_health_check.delay(current_datetime)
             result = task.get(timeout=6)
-        except TimeoutError as e:
+        except TimeoutError:
             return Response(
                 data={'status': 'unhealthy',
-                      'reason': 'celery job failed (TimeoutError)',
-                      'exception': str(e)},
+                      'reason': 'celery job failed (TimeoutError)'},
                 status=HTTP_412_PRECONDITION_FAILED)
         try:
             assert result == current_datetime
-        except AssertionError as e:
+        except AssertionError:
             return Response(
                 data={'status': 'unhealthy',
-                      'reason': 'celery job failed (AssertionError)',
-                      'exception': str(e)},
+                      'reason': 'celery job failed (AssertionError)'},
                 status=HTTP_412_PRECONDITION_FAILED)
-
         return Response({'status': 'healthy'})
 
 
@@ -562,19 +560,15 @@ class TickersLoadedHealthCheckView(APIView):
             assert Ticker.objects.filter(symbol=settings.INDEX_TICKER).exists()
             for ticker in settings.DEFAULT_TICKERS:
                 assert Ticker.objects.filter(symbol=ticker).exists()
-            return Response({'status': 'healthy', 'ticker_count': Ticker.objects.all().count()})
-        except AssertionError as e:
+            return Response({'status': 'healthy',
+                             'ticker_count': Ticker.objects.all().count()})
+        except AssertionError:
             return Response(
                 data={'status': 'unhealthy',
-                      'reason': 'tickers not loaded (AssertionError)',
-                      'exception': str(e)},
+                      'reason': 'tickers not loaded (AssertionError)'},
                 status=HTTP_412_PRECONDITION_FAILED)
         except ProgrammingError as e:
-            return Response(
-                data={'status': 'unhealthy',
-                      'reason': 'database query failed (ProgrammingError)',
-                      'exception': str(e)},
-                status=HTTP_412_PRECONDITION_FAILED)
+            return postgres_error_response(e)
 
 
 class QuotesUpdatedHealthCheckView(APIView):
@@ -586,29 +580,24 @@ class QuotesUpdatedHealthCheckView(APIView):
             # make sure all the quotes have been updated
             for ticker in [settings.INDEX_TICKER] + [t for t in settings.DEFAULT_TICKERS]:
                 assert Ticker.objects.get(symbol=ticker).latest_quote_date() is not None
-            return Response({'status': 'healthy', 'ticker_count': Ticker.objects.all().count()})
-        except AssertionError as e:
+            return Response({'status': 'healthy', 
+                             'quote_count': Quote.objects.all().count()})
+        except AssertionError:
             return Response(
                 data={'status': 'unhealthy',
-                      'reason': 'quotes not updated (AssertionError)',
-                      'exception': str(e)},
+                      'reason': 'quotes not updated (AssertionError)'},
                 status=HTTP_412_PRECONDITION_FAILED)
-        except Ticker.DoesNotExist as e:
+        except Ticker.DoesNotExist:
             return Response(
                 data={'status': 'unhealthy',
-                      'reason': 'tickers not loaded (DoesNotExist)',
-                      'exception': str(e)},
+                      'reason': 'tickers not loaded (DoesNotExist)'},
                 status=HTTP_412_PRECONDITION_FAILED)
         except ProgrammingError as e:
-            return Response(
-                data={'status': 'unhealthy',
-                      'reason': 'database query failed (ProgrammingError)',
-                      'exception': str(e)},
-                status=HTTP_412_PRECONDITION_FAILED)
+            return postgres_error_response(e)
 
 ```
 
-2) Now edit `source/django/stockpicker/stockpicker/urls.py` to match:
+3) Now edit `source/django/stockpicker/stockpicker/urls.py` to match:
 
 ```python
 from django.urls import path
@@ -651,43 +640,13 @@ urlpatterns = [
 
 ```
 
-3) Create `source/django/stockpicker/stockpicker/tasks.py` with the contents:
-```python
-from django.db.utils import ProgrammingError
-
-from stockpicker.celery import app
-from tickers.models import Ticker
-
-
-@app.task(bind=True, hard_time_limit=5)
-def celery_worker_health_check(self, timestamp):
-
-    try:
-        Ticker.objects.all().count()
-    except ProgrammingError:
-        return None
-    return timestamp
-
-```
-
 ### Run integration test script
 
 Now that we have all the files in place, we can finally run our integration tests.
 
-Make sure you are in the `source` directory on your host OS, and run the `devops` development environment running with:
+Make sure you are in the `source` directory on your host OS.
 
-```bash
-docker run -it \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -v $PWD:/src \
-    --rm \
-    --name \
-    local_devops \
-    devops \
-    /bin/bash
-```
-
-First build all the Docker images again with:
+We will need build all the Docker images again, with:
 
 ```bash
 docker build -t baseimage -f docker/baseimage/Dockerfile .
@@ -695,7 +654,15 @@ docker build -t webapp -f docker/webapp/Dockerfile .
 docker build -t celery -f docker/celery/Dockerfile .
 ```
 
-Now run the local image stack with:
+Or all at once with:
+
+```bash
+docker build -t baseimage -f docker/baseimage/Dockerfile . && \
+docker build -t webapp -f docker/webapp/Dockerfile . && \
+docker build -t celery -f docker/celery/Dockerfile .
+```
+
+Now run the local image stack, with:
 
 ```bash
 docker-compose -f docker/docker-compose-local-image-stack.yaml up
@@ -703,16 +670,9 @@ docker-compose -f docker/docker-compose-local-image-stack.yaml up
 
 You should see the app initialize and begin to update, like before, and again you should be able to go to [`localhost:8080`](http://localhost:8080/) in your favorite browser from your host OS, and see the same thing that you see live at [stockpicker.sloanahrens.com](https://stockpicker.sloanahrens.com).
 
-Leave the app stack running in this tab, and you can look at the log output.
+Leave the app stack running in this tab, and that you can look at the log output (the alternative is to run the same command in detached mode with `-d`).
 
-Now we are going to `docker exec` into the running container from a second terminal tab, with:
-
-```bash
-docker exec -it local_devops /bin/bash
-```
-
-You should see the container prompt again.
-Now build the `stacktest` image with:
+Now, from another terminal tab, in your `source` directory, build the `stacktest` image with:
 
 ```bash
 docker build -t stacktest -f docker/stacktest/Dockerfile .
@@ -737,8 +697,6 @@ You can turn off the local-image-stack with `ctl-c` and then:
 docker-compose -f docker/docker-compose-local-image-stack.yaml down
 ```
 
-and exit the `local_devops` container by typing `exit`.
-
 Now if you run `docker ps` from your host OS, you shouldn't see any running containers.
 
 You can run the entire build and test sequence with a single command, by using the following:
@@ -758,6 +716,7 @@ docker run -e SERVICE="localhost:8001" --network container:stockpicker_webapp st
     echo "*** WORKER2 LOGS:" && echo "$(docker logs stockpicker_worker2)" && \
     echo "*** WEBAPP LOGS:" && echo "$(docker logs stockpicker_webapp)") && \
 docker-compose -f docker/docker-compose-local-image-stack.yaml down
+
 ```
 
 [Prev: Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1-microservices-django.md)
