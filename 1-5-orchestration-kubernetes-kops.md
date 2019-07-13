@@ -74,8 +74,9 @@ root@1bc94b877039:/src# ls
 container_environments	django	docker
 ```
 
-### Kubernetes and Rancher
-...
+### Kubernetes and Kops
+
+
 
 [Prev: Part 4](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-4-ci-circleci-aws.md)
 [Next: Part 6]()

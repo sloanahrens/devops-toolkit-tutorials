@@ -300,23 +300,23 @@ Create `source/.dockerignore`:
 ci_scripts
 django/venv
 kubernetes
-kube-prometheus
 tutorials
 source
-source_first
 src
 _static
+db.sqlite3
 ```
 
 ### Push code
 
-Now we can attach our existing `source` folder to the new GitHub repository (remember to replace `sloanahrens` with your username, and `devops-toolkit-test` with the name of your new GitHub repo):
+Now you can attach your existing `source` folder to the new GitHub repository (remember to replace `user-name` with your username, and `repo-name` with the name of your new GitHub repo).
+Go to your `source` directory and from your host OS, run:
 
 ```bash
-cd source
 git init
+git add -A
 git commit -m "first commit"
-git remote add origin git@github.com:sloanahrens/devops-toolkit-tutorials.git
+git remote add origin git@github.com:user-name/repo-name.git
 git push -u origin master
 ```
 
@@ -338,10 +338,11 @@ It doesn't matter which region you use, as long as you are consistent.
 We need to create two ECR repositories, named `stockpicker/webapp` and `stockpicker/celery`.
 We will push docker images to these repos shortly.
 
-The URI for your repos will look similar to this:
+The URIs for your repos will look similar to these:
 
 ```
 421987441365.dkr.ecr.us-east-2.amazonaws.com/stockpicker/webapp
+421987441365.dkr.ecr.us-east-2.amazonaws.com/stockpicker/celery
 ```
 
 With different repo ID and region-name depending on your region.
@@ -399,14 +400,14 @@ Protect your AWS keys like you would protect your most valuable physical keys.
 Instead, I added my AWS keys to my CircleCI account in [AWS Permissions environment variables](https://circleci.com/gh/sloanahrens/devops-toolkit-test/edit#aws) in CircleCI.
 Just paste your keys into the boxes, and they will be available as environment variables in the CircleCI jobs, which means we can use the [AWS CLI](https://aws.amazon.com/cli/) in our CircleCI jobs.
 
-![alt text](https://github.com/sloanahrens/devops-toolkit-tutorials/raw/master/images/aws_iam_create_3.png "AWS keys in CircleCI")
+![alt text](https://github.com/sloanahrens/devops-toolkit-tutorials/raw/master/images/circleci_aws_vars.png "AWS keys in CircleCI")
 
 
 ### Push Docker images
 
 This step isn't strictly necessary, but if you want build and push the production Docker images from your local development machine, here are the steps.
 
-First run the `devops` development environment with:
+First run the `devops` development environment (we need it for the AWS CLI) with:
 
 ```bash
 docker run -it \
@@ -430,7 +431,8 @@ export AWS_SECRET_ACCESS_KEY=[REPLACE]
 We will also need two more environment variables.
 The first is `ECR_ID`, which you need to get from your ECR repos that you created earlier.
 The other is `AWS_REGION`, the region in which you are going to create your assets.
-My default region and repo id are:
+
+My default region and repo id are as follows, but you will need to change them to match your own account:
 
 ```bash
 export AWS_REGION=us-east-2
@@ -449,8 +451,8 @@ export IMAGE_TAG=master
 Now we are ready to build the Docker images like in Part 4:
 
 ```bash
-docker build -t baseimage -f docker/baseimage/Dockerfile .
-docker build -t webapp -f docker/webapp/Dockerfile .
+docker build -t baseimage -f docker/baseimage/Dockerfile . && \
+docker build -t webapp -f docker/webapp/Dockerfile . && \
 docker build -t celery -f docker/celery/Dockerfile .
 ```
 
@@ -464,6 +466,8 @@ And so now, the full commands to re-tag the images are:
 docker tag webapp $ECR_ID.dkr.ecr.$AWS_REGION.amazonaws.com/stockpicker/webapp:$IMAGE_TAG
 docker tag celery $ECR_ID.dkr.ecr.$AWS_REGION.amazonaws.com/stockpicker/celery:$IMAGE_TAG
 ```
+
+You can see your local images with `docker image ls`.
 
 Before we can push our images, we need to log into AWS with our programmatic user, which we can do with this command:
 
@@ -481,7 +485,7 @@ Login Succeeded
 Finally, we can push our images to the ECR repos by running:
 
 ```bash
-docker push $ECR_ID.dkr.ecr.$AWS_REGION.amazonaws.com/stockpicker/webapp:$IMAGE_TAG
+docker push $ECR_ID.dkr.ecr.$AWS_REGION.amazonaws.com/stockpicker/webapp:$IMAGE_TAG && \
 docker push $ECR_ID.dkr.ecr.$AWS_REGION.amazonaws.com/stockpicker/celery:$IMAGE_TAG
 ```
 
@@ -592,6 +596,7 @@ workflows:
       - tagged_image_test:
           requires:
             - image_build_test_push
+
 ```
 
 We've added a "Push Docker Images" task to the original `image_build_test_push` CircleCI job, and added a second job as well. 
@@ -714,4 +719,4 @@ The final output you see in the second job, called `tagged_image_test` should lo
 
 [Prev: Part 3](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-3-ci-integration-testing.md)
 |
-[Next: Part 5](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-5-orchestration-kubernetes-rancher.md)
+[Next: Part 5](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-5-orchestration-kubernetes-kops.md)
