@@ -444,7 +444,7 @@ APP_DEBUG=True
 
 ### 5) Docker-Compose celery stack file
 
-Similar to the approach in [Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-celery.md), we'll use a Docker-Compose file for local development.
+Now we're going to upgrade our Docker-Compose local development file, by adding some Celery components.
 
 Create:
 
@@ -512,7 +512,7 @@ volumes:
     external: false
 ```
 
-This Docker-Compose file creates the same `postgres` and `django` instances as in Part 1, and adds [redis](https://redis.io/) and [RabbitMQ](https://www.rabbitmq.com/) services as well as a second `baseimage` instance configured to run a single Celery worker. 
+This Docker-Compose file creates the same `postgres` and `django` instances we had earlier, and adds [redis](https://redis.io/) and [RabbitMQ](https://www.rabbitmq.com/) services as well as a second `baseimage` instance configured to run a single Celery worker. 
 
 Now, with everything else in place, we can run it (from the `source` directory on the host OS) with:
 
