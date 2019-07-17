@@ -778,9 +778,20 @@ docker run -it \
 
 Remember that in this command, the argument `-v $PWD:/src` connects the directory on the host OS from which you _run_ the command, to the `/src` directory inside the container.
 
-Now from inside the running container, pick a value of `IMAGE_TAG` and `STACK_NAME` (or leave them unchanged) and run the following to deploy a stack to our Kubernetes cluster:
+Now from inside the running container, run:
 
 ```bash
+KUBECONFIG_PASSPHRASE=some-long-string-of-random-words-more-secure-than-this && \
+export REGION=us-west-2 && \
+cd /src/kubernetes/$REGION/cluster && \
+gpg --symmetric --batch --yes --passphrase $KUBECONFIG_PASSPHRASE kubecfg.yaml
+
+```
+
+then pick a value of `IMAGE_TAG` and `STACK_NAME` (or leave them unchanged) and run the following to deploy a stack to our Kubernetes cluster: 
+
+```bash
+cd /src && \
 IMAGE_TAG=master && \
 STACK_NAME=stockpicker && \
 ENV_FILE=test-stack.yaml && \
