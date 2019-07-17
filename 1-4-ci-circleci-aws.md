@@ -34,7 +34,7 @@ I won't ask you to anything that will cost more than a few dollars a month, if t
 
 Make sure you've completed the first four parts of the tutorial.
 
-I'll assume that you still have all the files in place from the previous three exercises, contained in your `source` directory at the top level of your local clone of the `devops-toolkit` [repostitory](https://github.com/sloanahrens/devops-toolkit).
+I'll assume that you still have all the files in place from the previous three exercises, contained in your `source` directory at the top level of your local clone of the `devops-toolkit` [repository](https://github.com/sloanahrens/devops-toolkit).
 
 Your `source` directory should have at least the following structure:
 
@@ -163,7 +163,7 @@ jobs:
           command: |
             set -x
             docker-compose -f docker/docker-compose-local-image-stack.yaml up -d
-            docker run -e SERVICE="localhost:8001" --network container:stockpicker_webapp stacktest ./integration-tests.sh \
+            docker run -e SERVICE="localhost:8000" --network container:stockpicker_webapp stacktest ./integration-tests.sh \
                 || \
                 (echo "*** WORKER1 LOGS:" && echo "$(docker logs stockpicker_worker1)" && \
                 echo "*** WORKER2 LOGS:" && echo "$(docker logs stockpicker_worker2)" && \
@@ -539,7 +539,7 @@ jobs:
           command: |
             set -x
             docker-compose -f docker/docker-compose-local-image-stack.yaml up -d
-            docker run -e SERVICE="localhost:8001" --network container:stockpicker_webapp stacktest ./integration-tests.sh \
+            docker run -e SERVICE="localhost:8000" --network container:stockpicker_webapp stacktest ./integration-tests.sh \
                 || \
                 (echo "*** WORKER1 LOGS:" && echo "$(docker logs stockpicker_worker1)" && \
                 echo "*** WORKER2 LOGS:" && echo "$(docker logs stockpicker_worker2)" && \
@@ -580,7 +580,7 @@ jobs:
             export ECR_ID=421987441365
             $(aws ecr get-login --no-include-email --region us-east-2)
             docker-compose -f docker/docker-compose-tagged-image-stack.yaml up -d
-            docker run -e SERVICE="localhost:8001" --network container:stockpicker_webapp stacktest ./integration-tests.sh \
+            docker run -e SERVICE="localhost:8000" --network container:stockpicker_webapp stacktest ./integration-tests.sh \
                 || \
                 (echo "*** WORKER1 LOGS:" && echo "$(docker logs stockpicker_worker1)" && \
                 echo "*** WORKER2 LOGS:" && echo "$(docker logs stockpicker_worker2)" && \
@@ -632,7 +632,7 @@ services:
     image: $ECR_ID.dkr.ecr.$AWS_REGION.amazonaws.com/stockpicker/webapp:$IMAGE_TAG
     container_name: stockpicker_webapp
     ports:
-     - 8080:8001
+     - 8080:8000
     links:
       - postgres
       - rabbitmq
@@ -694,7 +694,7 @@ We can now test the tagged, pushed images locally by running the following `bash
 
 ```bash
 docker-compose -f docker/docker-compose-tagged-image-stack.yaml up -d && \
-docker run -e SERVICE="localhost:8001" --network container:stockpicker_webapp stacktest ./integration-tests.sh && \
+docker run -e SERVICE="localhost:8000" --network container:stockpicker_webapp stacktest ./integration-tests.sh && \
 docker-compose -f docker/docker-compose-tagged-image-stack.yaml down
 ```
 

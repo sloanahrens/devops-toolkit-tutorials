@@ -11,7 +11,7 @@ We won't fully automate the process until the next exercise, but by the end of t
 
 Make sure you've completed the the tutorial up through [Part 2](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-2-containerization-celery.md).
 
-I'll assume that you still have all the files in place from the previous two exercises, contained in your `source` directory at the top level of your local clone of the `devops-toolkit` [repostitory](https://github.com/sloanahrens/devops-toolkit).
+I'll assume that you still have all the files in place from the previous two exercises, contained in your `source` directory at the top level of your local clone of the `devops-toolkit` [repository](https://github.com/sloanahrens/devops-toolkit).
 
 Your `source` directory should have at least the following structure:
 
@@ -78,7 +78,7 @@ This image inherits from `baseimage`, sets the `C_FORCE_ROOT` environment variab
 ```dockerfile
 FROM baseimage
 
-EXPOSE 8001
+EXPOSE 8000
 
 WORKDIR /src
 
@@ -92,7 +92,7 @@ ENTRYPOINT ["/src/entrypoint.sh"]
 ```
 
 The `webapp` image will be used to run the Django web application.
-This image is similar to the `celery` image, but also exposes port `8001` (where the web app will be listening for requests), and uses an `ENTRYPOINT` to run the application via a Bash script.
+This image is similar to the `celery` image, but also exposes port `8000` (where the web app will be listening for requests), and uses an `ENTRYPOINT` to run the application via a Bash script.
 The entrypoint script is copied into the image, given proper executable permissions, then defined as the application entrypoint.
 
 3) `source docker/scripts/initialize-webapp.sh`:
@@ -124,7 +124,7 @@ echo "Start Quotes Update Task..."
 echo "from tickers.tasks import update_all_tickers; update_all_tickers.delay()" | python manage.py shell
 
 echo "Start uWSGI..."
-uwsgi --module stockpicker.wsgi:application --http 0.0.0.0:8001 --static-map /static=/srv/_static
+uwsgi --module stockpicker.wsgi:application --http 0.0.0.0:8000 --static-map /static=/srv/_static
 
 ```
 
@@ -133,7 +133,7 @@ The script first uses `wait-for-it.sh` to wait for service dependencies to be in
 Next the script initializes the app by running database migrations, collecting static files, and loading the default `Ticker`s via the Django management command we defined in [Part 1](https://github.com/sloanahrens/devops-toolkit-tutorials/blob/master/1-1-microservices-django.md).
 The script then queues up the `chained_ticker_updates` Celery task, so that `Quote`s will get updated as soon as a Celery worker is available.
 The final step is to start the [uWSGI server](https://uwsgi-docs.readthedocs.io/en/latest/), which we will use as our application server.
-The `uwsgi` command runs the application at `0.0.0.0:8001` (accessible at `localhost:8001` from the host OS), and uses the `--static-map` flag to serve our static assets (an improvement would be to use [nginx](https://www.nginx.com/) instead, but it adds some comlexity).
+The `uwsgi` command runs the application at `0.0.0.0:8000` (accessible at `localhost:8000` from the host OS), and uses the `--static-map` flag to serve our static assets (an improvement would be to use [nginx](https://www.nginx.com/) instead, but it adds some comlexity).
 
 ### Install `uWSGI`
 
@@ -296,7 +296,7 @@ services:
     image: webapp
     container_name: stockpicker_webapp
     ports:
-     - 8080:8001
+     - 8080:8000
     links:
       - postgres
       - rabbitmq
@@ -681,14 +681,14 @@ docker build -t stacktest -f docker/stacktest/Dockerfile .
 And we can run our integration test script with:
 
 ```bash
-docker run -e SERVICE="localhost:8001" --network container:stockpicker_webapp stacktest ./integration-tests.sh
+docker run -e SERVICE="localhost:8000" --network container:stockpicker_webapp stacktest ./integration-tests.sh
 ```
 
 Once all the tests pass, you should see this as the final line of your output:
 
 ```
 ...
-Test Pass: localhost:8001/health/quotes-updated/
+Test Pass: localhost:8000/health/quotes-updated/
 ```
 
 You can turn off the local-image-stack with `ctl-c` and then:
@@ -710,7 +710,7 @@ docker build -t stacktest -f docker/stacktest/Dockerfile . && \
 docker-compose -f docker/docker-compose-unit-test.yaml run unit-test && \
 docker-compose -f docker/docker-compose-unit-test.yaml down && \
 docker-compose -f docker/docker-compose-local-image-stack.yaml up -d && \
-docker run -e SERVICE="localhost:8001" --network container:stockpicker_webapp stacktest ./integration-tests.sh \
+docker run -e SERVICE="localhost:8000" --network container:stockpicker_webapp stacktest ./integration-tests.sh \
     || \
     (echo "*** WORKER1 LOGS:" && echo "$(docker logs stockpicker_worker1)" && \
     echo "*** WORKER2 LOGS:" && echo "$(docker logs stockpicker_worker2)" && \
